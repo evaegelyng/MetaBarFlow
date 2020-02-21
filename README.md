@@ -42,7 +42,7 @@
   
   unset http_proxy
 
-##### In R, run 
+#### In R, run 
 
   devtools::install_github("ropensci/taxizedb")
   
@@ -50,7 +50,7 @@
   
   db_download_ncbi()
 
-##### The taxizedb NCBI database should be updated regularly to keep up to date with the GenBank nt database (as much as possible - there seems to be some lag in the taxizedb online database) 
+#### The taxizedb NCBI database should be updated regularly to keep up to date with the GenBank nt database (as much as possible - there seems to be some lag in the taxizedb online database) 
 
 #### In the root data folder, download the raw sequencing data using wget directly in the terminal, e.g. using a screen or with:
 
