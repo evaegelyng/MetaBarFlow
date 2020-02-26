@@ -1,4 +1,3 @@
-#!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 ######################################################################################################################################################
 
@@ -9,24 +8,25 @@ args = commandArgs(trailingOnly=TRUE)
 print(args[1])
 print(args[2])
 
-# read the completed blast results into a table
-#IDtable <- read.csv(file = "../2-blast/tmp/Bac02_test_runs1to133_NA.blasthits", sep='\t', header=F, as.is=TRUE)
+# Read the completed blast results into a table
 IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
-# add header information, so the table is all nice and pretty
+
+# Read the possible problematic TaxIDs as a table
+MergedTaxIDs<-read.table("~/eDNA/faststorage/blastdb/nt/taxdump/MergedTaxIDs", header=TRUE)
+
+# Add header information
 names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","sgi","sseq","ssciname","staxid")
-# extract only those rows where the qcovs score is 100
+
+# Extract only those rows where the qcovs score is 100
 IDtable <- IDtable[IDtable$qcovs==100,]
 
 # Optionally make a smaller test table first, to test if the script will run properly, e.g. just the first 100 rows:
 # IDtable <- IDtable[1:100,]
 
-# load required packages
-library(taxizedb) #Can this be skipped now that the packages are installed in the environment?
+# Load required packages
+library(taxizedb) 
 library(dplyr)
 library(tidyr)
-
-#Provide ENTREZ API key
-options(ENTREZ_KEY="26ca7b35629b369aeede3e16b138c876ba09")
 
 # Define the four taxonomy script functions (where FunctionX is a wrapper that runs 1, 2, 3 in one go):
 
@@ -34,15 +34,44 @@ options(ENTREZ_KEY="26ca7b35629b369aeede3e16b138c876ba09")
 # Wrapper function using the three main functions - each step can also be done manually
 assign_taxonomy <- function(table,upper_margin=0.5,lower_margin=2, remove = c("")) {
   pf <- prefilter(table, upper_margin, lower_margin, remove)
-  gc <- get_classification(pf)
-  cf <- evaluate_classification(gc)
+  
+  # Replace old tax ids with new ones if they have a match in mergedtaxids dataframe #CKF 
+  pf$OldTaxID<-pf$staxid # Making an extra column on pf, same as staxid but with a new name so it can match with the mergedtaxid dataframe
+  pf_intermediate<-pf %>%
+  dplyr::left_join(MergedTaxIDs, by=c("OldTaxID"))  # now we can join with MergedTaxIDs using the oldtaxid column
+  
+  # Print which IDs are being changed 
+  pf_changed<-pf_intermediate %>%
+  dplyr::filter(!is.na(NewTaxID))
+  
+  if (nrow(pf_changed)>0) {
+  
+  for (i in 1:nrow(pf_changed)) {
+  pf_sub<-pf_changed[i,]
+  print(paste("Warning:", pf_sub$qseqid, "has an outdated taxid. Overwriting outdated taxid:", pf_sub$OldTaxID, "to new taxid:", pf_sub$NewTaxID, sep=" "))
+  }
+  
+ }  
+  
+  pf_new<-pf_intermediate %>%
+  dplyr::mutate(staxid=ifelse(is.na(NewTaxID), staxid, NewTaxID)) %>% # If there is no match, then staxid stays the same, otherwise it takes the id in NewTaxID
+  dplyr::select(-c(OldTaxID, NewTaxID)) # Now remove the two columns added to the dataframe, no longer needed 
+  
+  
+  ##
+  
+  gc <- get_classification(pf_new)
+  cf <- evaluate_classification(gc[[1]])     # AGR # gc[2] is the wrong taxid not classified 
   result <- list(classified_table=cf$taxonon_table, all_classifications=cf$all_taxa_table, all_classifications_summed=cf$all_taxa_table_summed,upper=upper_margin, lower=lower_margin, removed=remove)
-  return(result)
+  if (length(gc[[2]]) != 0) {
+    print(paste0("Taxids not found in the classification: ", gc[2])) # AGR - Print the list of not matched taxids  
+  }
+  return(result) 
 }
 
 # Function1
 # Filter data OTU-wise according to upper and lower margin set, and taxa to exclude
-prefilter <- function(IDtable, upper_margin=0.5, lower_margin=2, remove = c("")) {
+prefilter <- function(IDtable, upper_margin=0.5, lower_margin=2, remove = c("uncultured", "environmental")) {
   new_IDtable <- IDtable[0,] # prepare filtered matchlist
   IDtable <- IDtable[!IDtable$staxid == "N/A",]
   ids <- names(table(IDtable$qseqid))
@@ -81,17 +110,33 @@ get_classification <- function(IDtable2) {
   
   Start_from <- 1 # change if loop needs to be restarted due to time-out
   
+  wrong_taxid_matches <- c()
+  remove_entries <- c()
+  
   #Get ncbi classification of each entry
   for (cl in Start_from:o) { # the taxize command "classification" can be run on the all_staxids vector in one line, but often there is
     #a timeout command, therefor this loop workaround.
     print(paste0("step 1 of 3: processing: ", cl , " of ", o , " taxids")) # make a progressline (indicating the index the loops needs to be
     #restarted from if it quits)
-    all_classifications[cl] <- classification(all_staxids[cl], db = "ncbi")
+    tax_match <- classification(all_staxids[cl], db = "ncbi")   # AGR 
+    if (is.na(tax_match) == TRUE) {
+      wrong_taxid_matches <- c(wrong_taxid_matches,all_staxids[cl])
+      remove_entries <- c(remove_entries,cl)
+    } else {
+      all_classifications[cl] <- tax_match
+    }                                                           # AGR 
+  }
+  
+  # In case there are still bad taxIDs, we delete all sequences with the bad tax ID (Adrian + Mads solve 15-01-2020)
+  if (length(wrong_taxid_matches) != 0) {
+    all_classifications <- all_classifications[-remove_entries]
   }
   
   #Construct a taxonomic path from each classification
   output <- data.frame(staxid=character(),kingdom=character(), phylum=character(),class=character(),order=character(),family=character(),genus=character(),species=character(), stringsAsFactors=FALSE)
-  totalnames <- length(all_staxids)
+  totalnames <- length(all_staxids) - length(wrong_taxid_matches)
+  
+  ## - 1 ## this is if you have one NA, would run on test file, but not necessarily on other files with more NAs
   for (curpart in seq(1:totalnames)) {
     print(paste0("step 2 of 3: progress: ", round(((curpart/totalnames) * 100),0) ,"%")) # make a progress line
     currenttaxon <- all_classifications[curpart][[1]]
@@ -109,7 +154,7 @@ get_classification <- function(IDtable2) {
   }
   taxonomic_info <- merge(IDtable2,output,by = "staxid", all=TRUE)
   taxonomic_info$species[is.na(taxonomic_info$species)] <- taxonomic_info$ssciname[is.na(taxonomic_info$species)]
-  return(taxonomic_info)
+  return(list(taxonomic_info,wrong_taxid_matches))
 }
 
 # Function3
@@ -164,10 +209,9 @@ evaluate_classification <- function(classified) {
 
 
 # Classify your OTUs by running the wrapper (functionX) "assign_taxonomy" like this. Consider whether it makes sense to remove specific hits or taxa from the evaluation (see explanation below):
-my_classified_result <- assign_taxonomy(IDtable, upper_margin = 0, lower_margin = 2)
+my_classified_result <- assign_taxonomy(IDtable, upper_margin = 0.5, lower_margin = 2, remove = c("uncultured", "environmental"))
 
 #Write the result to a table
-#write.table(my_classified_result$classified_table, "my_classified_otus.txt", sep = "\t", quote = F, row.names = F)
 write.table(my_classified_result$classified_table, args[2], sep = "\t", quote = F, row.names = F)
 
 # Explanation to input

@@ -28,28 +28,28 @@ FINAL_FASTQ="$OUTDIR/DADA2_SS/${TAG_NAME}_R1.fastq"
 FTFP="$TAG_SEQ$PRIMER_F"
 RTRP="$RTAG_SEQ$PRIMER_R"
 
-# Trim tags, forward & reverse primers (search normal and antisens)
+# Trim tags, forward & reverse primers (search sense and antisense)
     cat "$INDIR/${INPUT_R1}" | \
     ${CUTADAPT} -g "${FTFP}" -e 0 -O "${#FTFP}" - | \
     ${CUTADAPT2} -a "${REV_PRIMER_R}" - > "${FINAL_FASTQ}"
 
 FINAL_FASTQ="$OUTDIR/DADA2_AS/${TAG_NAME}_R2.fastq"
 
-# Trim tags, forward & reverse primers (search normal and antisens)
+# Trim tags, forward & reverse primers (search sense and antisense)
     cat "$INDIR/${INPUT_R2}" | \
     ${CUTADAPT} -g "${FTFP}" -e 0 -O "${#FTFP}" - | \
     ${CUTADAPT2} -a "${REV_PRIMER_R}" - > "${FINAL_FASTQ}"
 
 FINAL_FASTQ="$OUTDIR/DADA2_SS/${TAG_NAME}_R2.fastq"
 
-# Trim tags, forward & reverse primers (search normal and antisens)
+# Trim tags, forward & reverse primers (search sense and antisense)
     cat "$INDIR/${INPUT_R2}" | \
     ${CUTADAPT} -g "${RTRP}" -e 0 -O "${#RTRP}" - | \
     ${CUTADAPT2} -a "${REV_PRIMER_F}" - > "${FINAL_FASTQ}"
 
 FINAL_FASTQ="$OUTDIR/DADA2_AS/${TAG_NAME}_R1.fastq"
 
-# Trim tags, forward & reverse primers (search normal and antisens)
+# Trim tags, forward & reverse primers (search sense and antisense)
     cat "$INDIR/${INPUT_R1}" | \
     ${CUTADAPT} -g "${RTRP}" -e 0 -O "${#RTRP}" - | \
     ${CUTADAPT2} -a "${REV_PRIMER_F}" - > "${FINAL_FASTQ}"

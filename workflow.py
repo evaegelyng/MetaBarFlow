@@ -211,7 +211,7 @@ gwf.target(
 #BLAST search and taxonomic assignment
 
 ###Split fasta file (the nochim one with chimeras removed) into K parts
-def splitter(inputFile, K=100):
+def splitter(inputFile, K=99):
     inputs = [inputFile]
     outFiles = [inputFile + '.split/'+'DADA2_nochim.part_'+'{:0>3d}'.format(i)+'.fasta' for i in range(1,K+1)]
     outIndex = inputFile + '.seqkit.fai'
@@ -269,7 +269,7 @@ def taxonomy(fileName, taxonomyFolder, blastFolder, k):
     '''.format(taxonomyFolder=taxonomyFolder, inputFile=inputFile, outputFile=outputFile) 
     return inputs, outputs, options, spec
 
-K=100
+K=99
 inputName = 'tmp/DADA2_nochim.otus'
 
 gwf.target_from_template( 'split', splitter(inputFile=inputName, K=K) )

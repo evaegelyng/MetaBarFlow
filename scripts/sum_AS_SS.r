@@ -1,6 +1,6 @@
 args = commandArgs(trailingOnly=TRUE)
 
-#Define a function for combining two or more tables, collapsing samples with similar names:  
+#Define a function for combining two or more sequence tables:  
 sumSequenceTables <- function(table1, table2, ..., orderBy = "abundance") {
   # Combine passed tables into a list
   tables <- list(table1, table2)
@@ -42,7 +42,7 @@ seqtab.nochim_AS <- readRDS(stnsAS)
 seqtab.nochim_SS <- readRDS(stnsSS)
 seqtab_AS <- readRDS(stAS)
 seqtab_SS <- readRDS(stSS)
-sumtable <- sumSequenceTables(seqtab_SS,seqtab_AS) # den her kommando kan merge to tabeller. sammen navn og/eller samme sekvens merges.
+sumtable <- sumSequenceTables(seqtab_SS,seqtab_AS) 
 nochim_sumtable <- sumSequenceTables(seqtab.nochim_SS,seqtab.nochim_AS)
 st <- file.path(args[1],"seqtab_RDS")
 stns <- file.path(args[1],"seqtab.nochim_RDS")

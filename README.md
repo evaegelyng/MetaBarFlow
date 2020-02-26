@@ -70,7 +70,11 @@
 
   echo lib1 lib2 | xargs -n 1 cp batchfileDADA2.list
   
-#### Then change the fastq file names and the tag file name to the appropriate ones. Make sure that the file is in UNIX format. Again, ensure that there is one (1) empty line at the end of the file.  
+#### Then change the fastq file names and the tag file name to the appropriate ones. Make sure that the file is in UNIX format. Again, ensure that there is one (1) empty line at the end of the file.
+
+#### If appropriate, change the minimum length requirement in the match_pairs.r script. Check whether it would be appropriate to change any of the options set for the blastn command. In the taxonomy.r script, consider whether you want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Also consider whether the upper and lower margins should be adjusted (see explanation in the script).    
+
+#### In the workflow file, replace the project name and the path to the raw data with your own name and path. If appropriate, change the length and quality requirements provided to the sickle command. 
 
 #### Activate the environment
   
@@ -79,5 +83,7 @@
 #### Run gwf workflow from main folder
 
 gwf run
+
+#### Increase no. of cores, memory requirements and/or time limits if needed, or decrease if you need less resources
 
 #### NB! Marie Lund at Microbiology recommends to do dada2 cleaning before demultiplexing!
