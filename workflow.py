@@ -5,8 +5,7 @@ from glob import glob
 
 project_name = "havblitz"
 
-#gwf = Workflow(defaults={"account": "edna"}) #Should give higher job priority, but does not work - remind Dan
-gwf = Workflow()
+gwf = Workflow(defaults={"account": "edna"}) 
 
 #Demultiplex
 libraries = [x for x in glob("data/X201SC19122834-Z01-F001/raw_data/*") if os.path.isdir(x)]
