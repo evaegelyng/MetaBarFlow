@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
 ######################################################################################################################################################
 
@@ -17,8 +18,13 @@ MergedTaxIDs<-read.table("~/eDNA/faststorage/blastdb/nt/taxdump/MergedTaxIDs", h
 # Add header information
 names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","sgi","sseq","ssciname","staxid")
 
-# Extract only those rows where the qcovs score is 100
-IDtable <- IDtable[IDtable$qcovs==100,]
+# Extract only those rows where the qcovs score is 100. First check if qcovs contains hits with 100%
+    if (max(IDtable$qcovs) == 100 ) {
+      IDtable <- IDtable[IDtable$qcovs==100,]  
+    } else {
+      readr::write_file("", args[2])
+      stop("Query coverage is less than 100% for all hits", call.=FALSE)
+    }
 
 # Optionally make a smaller test table first, to test if the script will run properly, e.g. just the first 100 rows:
 # IDtable <- IDtable[1:100,]

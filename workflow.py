@@ -264,7 +264,13 @@ def taxonomy(fileName, taxonomyFolder, blastFolder, k):
     
     spec = '''
     mkdir -p {taxonomyFolder}
-    Rscript scripts/taxonomy.r {inputFile} {outputFile}
+    # Check if blast file is empty
+    if [ `cat {inputFile} | wc -l` != 0 ]
+    then
+      Rscript scripts/taxonomy.r {inputFile} {outputFile}
+    else
+      touch {outputFile}
+    fi
     '''.format(taxonomyFolder=taxonomyFolder, inputFile=inputFile, outputFile=outputFile) 
     return inputs, outputs, options, spec
 
@@ -276,3 +282,24 @@ gwf.target_from_template( 'split', splitter(inputFile=inputName, K=K) )
 for k in range(1,K+1):
   gwf.target_from_template( 'blaster_{}'.format(k), blaster(fileName=inputName, k=k, outFolder='tmp/blast') )
   gwf.target_from_template( 'taxonomy_{}'.format(k), taxonomy(fileName=inputName, taxonomyFolder='tmp/taxonomy', blastFolder='tmp/blast', k=k) )
+
+### Combine all the small taxonomical classfication files into one large file
+
+input_files = glob('tmp/taxonomy/taxonomy*.txt')
+ 
+output_files = ['tmp/taxonomy/classified.txt']
+    
+gwf.target(
+   name="combine_taxonomy_{}".format(project_name),
+   inputs=input_files,
+   outputs=output_files,
+   cores=1,
+   memory="1g",
+   walltime="00:10:00",
+ ) << """
+    head -n1 tmp/taxonomy/taxonomy.1.txt > tmp/taxonomy/classified.txt
+    for fname in tmp/taxonomy/taxonomy*.txt
+    do
+        tail -n +2 $fname >> tmp/taxonomy/classified.txt
+    done
+   """                

@@ -1,3 +1,5 @@
+### This workflow is designed for processing fastq files from Illumina sequencing of metabarcoding libraries. I.e. sequencing libraries built on pools of amplicons from complex samples (e.g. eDNA samples or bulk samples with DNA from several taxa), which have each been PCR-amplified using a unique combination of oligonucleotide tags on the primers. The workflow operates with amplicon sequence variants (ASVs) throughout, i.e. sequences are not collapsed into OTUs. The workflow includes demultiplexing, quality and error filtering, BLAST searching against GenBank's nt database, and taxonomic classification of the ASVs based on the BLAST hits. The main outputs of this workflow are an ASV table (which ASVs are found in which samples) and the taxonomic classification of these ASVs. Enjoy!
+
 #### Make overall directories
 
   mkdir -p backup/data tmp results
@@ -82,8 +84,14 @@
   
 #### Run gwf workflow from main folder
 
-gwf run
+gwf run workflow.py
 
-#### Increase no. of cores, memory requirements and/or time limits if needed, or decrease if you need less resources
+#### Check the status of the workflow or a specific part using e.g.
 
-#### NB! Marie Lund at Microbiology recommends to do dada2 cleaning before demultiplexing!
+gwf status taxonomy_96
+
+#### Increase no. of cores, memory requirements and/or time limits if needed, or decrease if you need less resources. 
+
+#### The outputs from this workflow that you will normally use for further analyses are primarily the ASV table of which unique sequences are in which samples (DADA2_nochim.table in tmp) and the taxonomic classification of these ASVs (classified.txt in tmp/taxonomy). Further analyses can be done on your local computer in R.
+
+#### NB! Marie Lund at Microbiology recommends to do dada2 cleaning before demultiplexing! Perhaps this should be implemented
