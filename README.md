@@ -1,4 +1,4 @@
-#### This workflow is designed for processing fastq files from Illumina sequencing of metabarcoding libraries. I.e. sequencing libraries built on pools of amplicons from complex samples (e.g. eDNA samples or bulk samples with DNA from several taxa), which have each been PCR-amplified using a unique combination of oligonucleotide tags on the primers. The workflow operates with amplicon sequence variants (ASVs) throughout, i.e. sequences are not collapsed into OTUs. The workflow includes demultiplexing, quality and error filtering, BLAST searching against GenBank's nt database, and taxonomic classification of the ASVs based on the BLAST hits. The main outputs of this workflow are an ASV table (which ASVs are found in which samples) and the taxonomic classification of these ASVs. Enjoy!
+### This workflow is designed for processing fastq files from Illumina sequencing of metabarcoding libraries. I.e. sequencing libraries built on pools of amplicons from complex samples (e.g. eDNA samples or bulk samples with DNA from several taxa), which have each been PCR-amplified using a unique combination of oligonucleotide tags on the primers. The workflow operates with amplicon sequence variants (ASVs) throughout, i.e. sequences are not collapsed into OTUs. The workflow includes demultiplexing, quality and error filtering, BLAST searching against GenBank's nt database, and taxonomic classification of the ASVs based on the BLAST hits. The main outputs of this workflow are an ASV table (which ASVs are found in which samples) and the taxonomic classification of these ASVs. Enjoy!
 
 #### Make overall directories
 
@@ -68,7 +68,7 @@
   
 #### In each library data folder, make a file named tags.txt containing the sample names and corresponding forward and reverse tag sequences (see an example in data folder of this repository). Remember to put the library/PCR replicate number at the end of each sample name (e.g. "SAMPLE1_1" for library 1, "SAMPLE1_2" for library 2 and so on), so that PCR replicates will be kept separate when the data from the different libraries are merged. You can start by making the file for library 1 in excel, then save as tab separated file, transfer to the server, change from Windows to UNIX format (important!) and then use this file as a template for the remaining libraries (just replace replicate number in the sample names). Ensure that there is one (1) empty line at the end of each file. 
 
-#### In each library data folder, make a file named batchfileDADA2.list containing the fastq file names, the primer sequences, and the minimum length required for a read (unaligned, i.e. forward or reverse read) after trimming of primers and tags (see example in data folder of this repository). Again, you can start by making the file for the first library, then copy it to the other libraries like this:
+#### In each library data folder, make a file named batchfileDADA2.list containing the fastq file names, the primer sequences, and the minimum length required for a read (unaligned, i.e. forward or reverse read) after trimming of primers and tags (see example in data folder of this repository). If your primers contain inosine bases ("I"), these need to be replaced with "N", as the software does not recognize "I". Again, you can start by making the file for the first library, then copy it to the other libraries like this:
 
   echo lib1 lib2 | xargs -n 1 cp batchfileDADA2.list
   
@@ -84,7 +84,7 @@
   
 #### Run gwf workflow from main folder
 
-gwf run workflow.py
+gwf run
 
 #### Check the status of the workflow or a specific part using e.g.
 

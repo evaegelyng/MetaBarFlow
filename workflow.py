@@ -8,6 +8,9 @@ project_name = "havblitz"
 gwf = Workflow(defaults={"account": "edna"}) 
 
 #Demultiplex
+
+batchfile = "batchfileDADA2.list"
+
 libraries = [x for x in glob("data/X201SC19122834-Z01-F001/raw_data/*") if os.path.isdir(x)]
 
 for library_root in libraries:
@@ -33,8 +36,8 @@ for library_root in libraries:
                 walltime="1:00:00",
             ) << """
                 mkdir -p tmp/{library_id}
-                ./scripts/demultiplex.sh {library_root} tmp/{library_id} {tag_id} {tag_fseq} {tag_rseq}
-            """.format(library_root=library_root, library_id=library_id, tag_id=tag_id, tag_fseq=fseq, tag_rseq=rseq) 
+                ./scripts/demultiplex.sh {library_root} tmp/{library_id} {tag_id} {tag_fseq} {tag_rseq} {batchfile}
+            """.format(library_root=library_root, library_id=library_id, tag_id=tag_id, tag_fseq=fseq, tag_rseq=rseq, batchfile=batchfile) 
             
 #Quality trimming of reads
 for library_root in libraries:
@@ -210,7 +213,7 @@ gwf.target(
 #BLAST search and taxonomic assignment
 
 ###Split fasta file (the nochim one with chimeras removed) into K parts
-def splitter(inputFile, K=99):
+def splitter(inputFile, K=98):
     inputs = [inputFile]
     outFiles = [inputFile + '.split/'+'DADA2_nochim.part_'+'{:0>3d}'.format(i)+'.fasta' for i in range(1,K+1)]
     outIndex = inputFile + '.seqkit.fai'
@@ -241,11 +244,11 @@ def blaster(fileName, k, outFolder):
         'walltime': '4:00:00'
     }
     spec = '''
-    export BLASTDB=/faststorage/project/eDNA/blastdb/nt/
-    mkdir -p {out}/blast
+    export BLASTDB=/faststorage/project/eDNA/blastdb/nt-old-30032020/
+    mkdir -p {out}
 
     echo "RUNNING THREAD {k} BLAST"
-    blastn -db /faststorage/project/eDNA/blastdb/nt/nt -max_target_seqs 500 -num_threads 4 -outfmt "6 std qlen qcovs sgi sseq sscinames staxid" -out {outBlast} -qcov_hsp_perc 90 -perc_identity 80 -query {inputFasta}
+    blastn -db /faststorage/project/eDNA/blastdb/nt-old-30032020/nt -max_target_seqs 500 -num_threads 4 -outfmt "6 std qlen qcovs sgi sscinames staxid" -out {outBlast} -qcov_hsp_perc 90 -perc_identity 80 -query {inputFasta}
     echo "hello" > {outLog}
     echo "DONE THREAD {k}"
     '''.format(out=outFolder, k=k, inputFasta=inputFasta, outBlast=outBlast, outLog=outLog)
@@ -274,7 +277,7 @@ def taxonomy(fileName, taxonomyFolder, blastFolder, k):
     '''.format(taxonomyFolder=taxonomyFolder, inputFile=inputFile, outputFile=outputFile) 
     return inputs, outputs, options, spec
 
-K=99
+K=98
 inputName = 'tmp/DADA2_nochim.otus'
 
 gwf.target_from_template( 'split', splitter(inputFile=inputName, K=K) )

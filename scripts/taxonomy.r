@@ -13,10 +13,10 @@ print(args[2])
 IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 
 # Read the possible problematic TaxIDs as a table
-MergedTaxIDs<-read.table("~/eDNA/faststorage/blastdb/nt/taxdump/MergedTaxIDs", header=TRUE)
+MergedTaxIDs<-read.table("~/eDNA/faststorage/blastdb/nt-old-30032020/taxdump/MergedTaxIDs", header=TRUE)
 
 # Add header information
-names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","sgi","sseq","ssciname","staxid")
+names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","sgi","ssciname","staxid")
 
 # Extract only those rows where the qcovs score is 100. First check if qcovs contains hits with 100%
     if (max(IDtable$qcovs) == 100 ) {
@@ -176,7 +176,7 @@ evaluate_classification <- function(classified) {
     test2 <- test %>% filter(margin == "upper")
     test2$score <- 100*(1/test2$evalue)/sum(1/test2$evalue)  # HER BEREGSES SCOREN FOR ALLE MATCHES PER OTU
     test4 <- test2 %>% filter(margin == "upper") %>%
-      dplyr::select(margin,qseqid,sgi,sseq,staxid,pident,score,qcovs,kingdom,phylum,class,order,family,genus,species) %>% 
+      dplyr::select(margin,qseqid,sgi,sseqid,staxid,pident,score,qcovs,kingdom,phylum,class,order,family,genus,species) %>% 
       group_by(qseqid,kingdom, phylum,class,order,family,genus,species) %>% 
       mutate(species_score=sum(score)) %>% 
       group_by(qseqid,kingdom, phylum,class,order,family,genus) %>% 
@@ -193,7 +193,7 @@ evaluate_classification <- function(classified) {
       mutate(kingdom_score=sum(score)) %>% ungroup() %>%
       arrange(-kingdom_score,-phylum_score,-class_score,-order_score,-family_score,-genus_score,-species_score)
     test3 <- test4 %>% slice(1)
-    test5 <- test4 %>% distinct(qseqid,sgi,sseq,pident,qcovs,kingdom,phylum,class,order,family,genus,species,sseq,kingdom_score,phylum_score,class_score,order_score,family_score,genus_score,species_score) 
+    test5 <- test4 %>% distinct(qseqid,sgi,sseqid,pident,qcovs,kingdom,phylum,class,order,family,genus,species,kingdom_score,phylum_score,class_score,order_score,family_score,genus_score,species_score) 
     string1 <- test %>% dplyr::select(species,pident) %>% 
       distinct(species,pident) %>% arrange(-pident) %>% t()
     string2 <- toString(unlist(string1))
