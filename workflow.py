@@ -9,7 +9,7 @@ gwf = Workflow(defaults={"account": "edna"})
 
 #Demultiplex
 
-batchfile = "batchfileDADA2.list"
+batchfile = "batchfileDADA2_Elas02.list"
 
 libraries = [x for x in glob("data/X201SC19122834-Z01-F001/raw_data/*") if os.path.isdir(x)]
 
@@ -244,11 +244,11 @@ def blaster(fileName, k, outFolder):
         'walltime': '4:00:00'
     }
     spec = '''
-    export BLASTDB=/faststorage/project/eDNA/blastdb/nt-old-30032020/
+    export BLASTDB=/faststorage/project/eDNA/blastdb/nt_200401/
     mkdir -p {out}
 
     echo "RUNNING THREAD {k} BLAST"
-    blastn -db /faststorage/project/eDNA/blastdb/nt-old-30032020/nt -max_target_seqs 500 -num_threads 4 -outfmt "6 std qlen qcovs sgi sscinames staxid" -out {outBlast} -qcov_hsp_perc 90 -perc_identity 80 -query {inputFasta}
+    blastn -db /faststorage/project/eDNA/blastdb/nt_200401/nt -max_target_seqs 500 -num_threads 4 -outfmt "6 std qlen qcovs sgi sscinames staxid" -out {outBlast} -qcov_hsp_perc 90 -perc_identity 80 -query {inputFasta}
     echo "hello" > {outLog}
     echo "DONE THREAD {k}"
     '''.format(out=outFolder, k=k, inputFasta=inputFasta, outBlast=outBlast, outLog=outLog)
