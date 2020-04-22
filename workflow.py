@@ -129,9 +129,9 @@ for library_root in libraries:
 for library_root in libraries:
     library_id = os.path.basename(library_root)
     
+    input_files = []
     with open(os.path.join(library_root, "tags.txt")) as tags_file:
         for line in tags_file:
-            input_files = []
             tag_id, fseq, rseq = line.split()
 
             input_files.append("tmp/{}/DADA2_AS/filtered/matched/{}_F_matched.fastq.gz".format(library_id, tag_id))
@@ -239,7 +239,7 @@ def blaster(fileName, k, outFolder):
       outLog
     ]
     options = {
-        'cores': 4,
+        'cores': 2,
         'memory': '32g',
         'walltime': '4:00:00'
     }
