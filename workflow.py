@@ -151,7 +151,7 @@ for library_root in libraries:
       inputs=input_files,
       outputs=output_files,
       cores=4,
-      memory="4g",
+      memory="12g",
       walltime="1:00:00",
     ) << """
       Rscript ./scripts/remove_errors.r tmp/{library_id}
