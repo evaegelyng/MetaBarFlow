@@ -74,10 +74,10 @@ for library_root in libraries:
             ) << """
                 mkdir -p {folderAS}
                 mkdir -p {folderSS}
-                sickle se -l 50 -q 28 -x -t sanger -f {inputASF} -o {outputASF}
-                sickle se -l 50 -q 28 -x -t sanger -f {inputASR} -o {outputASR}
-                sickle se -l 50 -q 28 -x -t sanger -f {inputSSF} -o {outputSSF}
-                sickle se -l 50 -q 28 -x -t sanger -f {inputSSR} -o {outputSSR} 
+                sickle se -l 50 -q 28 -x -t sanger -f {inputASF} -o {outputASF} || echo "Empty file " {outputASF} 
+                sickle se -l 50 -q 28 -x -t sanger -f {inputASR} -o {outputASR} || echo "Empty file " {outputASR} 
+                sickle se -l 50 -q 28 -x -t sanger -f {inputSSF} -o {outputSSF} || echo "Empty file " {outputSSF} 
+                sickle se -l 50 -q 28 -x -t sanger -f {inputSSR} -o {outputSSR} || echo "Empty file " {outputSSR} 
             """.format(folderAS=folderAS,folderSS=folderSS,inputASF=input_files[0],inputASR=input_files[1],inputSSF=input_files[2],inputSSR=input_files[3],outputASF=output_files[0],outputASR=output_files[1],outputSSF=output_files[2],outputSSR=output_files[3])
        
 #Matching paired reads
