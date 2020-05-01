@@ -58,9 +58,17 @@
 
   nohup wget --continue --quiet URL &
  
-#### Unzip the tar.gz file 
+#### Unzip the tar.gz or .tar file 
 
   tar -xzf filename.tar.gz
+  
+or
+ 
+  tar -xvf filename.tar
+
+#### Check md5 sum for the fastq.gz files in each library to make sure they are intact
+
+md5sum -c MD5.txt
   
 #### Unzip the fastq.gz files
 
