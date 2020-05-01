@@ -94,6 +94,10 @@ md5sum -c MD5.txt
 
 gwf run
 
+#### If you get an error mentioning the backend, try to reconfigure this to slurm
+
+gwf config set backend slurm
+
 #### Check the status of the workflow or a specific part using e.g.
 
 gwf status taxonomy_96
