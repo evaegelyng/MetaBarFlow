@@ -4,7 +4,7 @@
 
   mkdir -p backup/data tmp results
 
-#### Copy the scripts folder from this repository to the backup folder. 
+#### Copy the scripts folder from the Github repository to the backup folder. 
 
 #### Put the workflow.py file in the main directory, and the conda environment description in the backup folder
 
@@ -44,7 +44,7 @@
   
   unset http_proxy
 
-#### In R, run 
+#### In R (still on the cluster, type R to start), run 
 
   devtools::install_github("ropensci/taxizedb")
   
