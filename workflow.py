@@ -115,13 +115,32 @@ for library_root in libraries:
             ) << """
                 mkdir -p {folderAS}
                 mkdir -p {folderSS}
+                if grep -q "Empty file  {inputASF}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
+                then
+                 echo "" > {outputASF}
+                fi
+                if grep -q "Empty file  {inputASR}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
+                then
+                 echo "" > {outputASR}
+                fi
+                if grep -q "Empty file  {inputSSF}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
+                then
+                 echo "" > {outputSSF}
+                fi
+                if grep -q "Empty file  {inputSSR}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
+                then
+                 echo "" > {outputSSR}
+                fi     
                 Rscript ./scripts/match_pairs.r {inputASF},{inputASR},{inputSSF},{inputSSR} {outputASF},{outputASR},{outputSSF},{outputSSR} 
-                 if grep -q "removed" ".gwf/logs/match_{project_name}_{library_id}_{tag_id}.stderr"
+                 if grep -q "removed all reads: {outputASF}" ".gwf/logs/match_{project_name}_{library_id}_{tag_id}.stderr"
                  then
-                  echo "" > "tmp/{library_id}/DADA2_AS/filtered/matched/{tag_id}_F_matched.fastq.gz"
-                  echo "" > "tmp/{library_id}/DADA2_AS/filtered/matched/{tag_id}_R_matched.fastq.gz"
-                  echo "" > "tmp/{library_id}/DADA2_SS/filtered/matched/{tag_id}_F_matched.fastq.gz"
-                  echo "" > "tmp/{library_id}/DADA2_SS/filtered/matched/{tag_id}_R_matched.fastq.gz"
+                  echo "" > {outputASF}
+                  echo "" > {outputASR}
+                 fi
+                 if grep -q "removed all reads: {outputSSF}" ".gwf/logs/match_{project_name}_{library_id}_{tag_id}.stderr"
+                 then                 
+                  echo "" > {outputSSF}
+                  echo "" > {outputSSR}
                  fi
             """.format(folderAS=folderAS,folderSS=folderSS,inputASF=input_files[0],inputASR=input_files[1],inputSSF=input_files[2],inputSSR=input_files[3],outputASF=output_files[0],outputASR=output_files[1],outputSSF=output_files[2],outputSSR=output_files[3],project_name=project_name,library_id=library_id,tag_id=tag_id)         
 
