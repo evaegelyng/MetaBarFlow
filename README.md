@@ -98,9 +98,12 @@ gwf run
 
 gwf config set backend slurm
 
-#### Check the status of the workflow or a specific part using e.g.
+#### Check the status of the workflow using 
 
-gwf status taxonomy_96
+gwf status 
+
+#### By adding the name of a specific target after the above command, you can see the status of this target.
+#### As the function splitting your fasta file of OTUs before BLASTing may output a smaller number of files than the 99 files specified (it seems the software has certain thresholds for the number of sequences that can go in each file), double-check in the .stderr log file that the number of sequences of the separate files add up to the total sequence number.
 
 #### Increase no. of cores, memory requirements and/or time limits if needed, or decrease if you need less resources. 
 
