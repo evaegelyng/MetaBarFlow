@@ -117,30 +117,30 @@ for library_root in libraries:
                 mkdir -p {folderSS}
                 if grep -q "Empty file  {inputASF}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
                 then
-                 echo "" > {outputASF}
+                 touch {outputASF}
                 fi
                 if grep -q "Empty file  {inputASR}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
                 then
-                 echo "" > {outputASR}
+                 touch {outputASR}
                 fi
                 if grep -q "Empty file  {inputSSF}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
                 then
-                 echo "" > {outputSSF}
+                 touch {outputSSF}
                 fi
                 if grep -q "Empty file  {inputSSR}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
                 then
-                 echo "" > {outputSSR}
+                 touch {outputSSR}
                 fi     
                 Rscript ./scripts/match_pairs.r {inputASF},{inputASR},{inputSSF},{inputSSR} {outputASF},{outputASR},{outputSSF},{outputSSR} 
                  if grep -q "removed all reads: {outputASF}" ".gwf/logs/match_{project_name}_{library_id}_{tag_id}.stderr"
                  then
-                  echo "" > {outputASF}
-                  echo "" > {outputASR}
+                  touch {outputASF}
+                  touch {outputASR}
                  fi
                  if grep -q "removed all reads: {outputSSF}" ".gwf/logs/match_{project_name}_{library_id}_{tag_id}.stderr"
                  then                 
-                  echo "" > {outputSSF}
-                  echo "" > {outputSSR}
+                  touch {outputSSF}
+                  touch {outputSSR}
                  fi
             """.format(folderAS=folderAS,folderSS=folderSS,inputASF=input_files[0],inputASR=input_files[1],inputSSF=input_files[2],inputSSR=input_files[3],outputASF=output_files[0],outputASR=output_files[1],outputSSF=output_files[2],outputSSR=output_files[3],project_name=project_name,library_id=library_id,tag_id=tag_id)         
 
@@ -232,19 +232,19 @@ gwf.target(
 #BLAST search and taxonomic assignment
 
 ###Split fasta file (the nochim one with chimeras removed) into K parts
-def splitter(inputFile, K=98):
+def splitter(inputFile, K=99):
     inputs = [inputFile]
-    outFiles = [inputFile + '.split/'+'DADA2_nochim.part_'+'{:0>3d}'.format(i)+'.fasta' for i in range(1,K+1)]
     outIndex = inputFile + '.seqkit.fai'
-    outputs = outFiles + [outIndex]
     options = {
         'cores': 1,
         'memory': '2g',
         'walltime': '1:00:00'
     }
     spec = '''
-    seqkit split {inputFile} -p {K} -2
+    seqkit split {inputFile} -f -p {K} -2
     '''.format(inputFile=inputFile, K=K)
+    outFiles = glob(inputFile + '.split/DADA2_nochim.part*.fasta')
+    outputs = outFiles + [outIndex]
     return inputs, outputs, options, spec
 
 #####blast a single k-th file
@@ -265,7 +265,6 @@ def blaster(fileName, k, outFolder):
     spec = '''
     export BLASTDB=/faststorage/project/eDNA/blastdb/nt_200401/
     mkdir -p {out}
-
     echo "RUNNING THREAD {k} BLAST"
     blastn -db /faststorage/project/eDNA/blastdb/nt_200401/nt -max_target_seqs 500 -num_threads 4 -outfmt "6 std qlen qcovs sgi sscinames staxid" -out {outBlast} -qcov_hsp_perc 90 -perc_identity 80 -query {inputFasta}
     echo "hello" > {outLog}
@@ -293,13 +292,18 @@ def taxonomy(fileName, taxonomyFolder, blastFolder, k):
     else
       touch {outputFile}
     fi
+    if grep -q "Query coverage is less than 100% for all hits" ".gwf/logs/taxonomy_" + str(k) + ".stdout"
+    then
+      touch {outputFile}
     '''.format(taxonomyFolder=taxonomyFolder, inputFile=inputFile, outputFile=outputFile) 
     return inputs, outputs, options, spec
 
-K=98
 inputName = 'tmp/DADA2_nochim.otus'
 
-gwf.target_from_template( 'split', splitter(inputFile=inputName, K=K) )
+gwf.target_from_template( 'split', splitter(inputFile=inputName) )
+
+parts=glob('tmp/DADA2_nochim.otus.split/DADA2_nochim.part*.fasta')
+K=len(parts)
                                                                 
 for k in range(1,K+1):
   gwf.target_from_template( 'blaster_{}'.format(k), blaster(fileName=inputName, k=k, outFolder='tmp/blast') )
