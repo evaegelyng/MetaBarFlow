@@ -117,19 +117,19 @@ for library_root in libraries:
                 mkdir -p {folderSS}
                 if grep -q "Empty file  {inputASF}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
                 then
-                 touch {outputASF}
+                 touch {outputASF} {outputASR}
                 fi
                 if grep -q "Empty file  {inputASR}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
                 then
-                 touch {outputASR}
+                 touch {outputASF} {outputASR}
                 fi
                 if grep -q "Empty file  {inputSSF}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
                 then
-                 touch {outputSSF}
+                 touch {outputSSF} {outputSSR}
                 fi
                 if grep -q "Empty file  {inputSSR}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
                 then
-                 touch {outputSSR}
+                 touch {outputSSF} {outputSSR}
                 fi     
                 Rscript ./scripts/match_pairs.r {inputASF},{inputASR},{inputSSF},{inputSSR} {outputASF},{outputASR},{outputSSF},{outputSSR} 
                  if grep -q "removed all reads: {outputASF}" ".gwf/logs/match_{project_name}_{library_id}_{tag_id}.stderr"
