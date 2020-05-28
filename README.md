@@ -28,16 +28,16 @@
 ```
   mkdir people
 
-  mkdir "name1"
+  mkdir name1
 
-  mkdir "name2"
+  mkdir name2
 ```
 
 #### Duplicate root folder hierarchy in each person's folder
   
 #### Create a conda environment based on the description file
 
-  `conda env create -f environment.yml`
+  `conda env create --name projectname -f environment.yml`
 
 #### Install R package taxizedb. In the shell, run
 

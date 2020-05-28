@@ -33,7 +33,7 @@ for library_root in libraries:
                 outputs=output_files,
                 cores=1,
                 memory="4g",
-                walltime="1:00:00",
+                walltime="2:00:00",
             ) << """
                 mkdir -p tmp/{library_id}
                 ./scripts/demultiplex.sh {library_root} tmp/{library_id} {tag_id} {tag_fseq} {tag_rseq} {batchfile}
