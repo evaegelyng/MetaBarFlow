@@ -3,15 +3,15 @@ import os, sys
 import math
 from glob import glob
 
-project_name = "havblitz"
+project_name = "Ilulissat"
 
 gwf = Workflow(defaults={"account": "edna"}) 
 
 #Demultiplex
 
-batchfile = "batchfileDADA2_Elas02.list"
+batchfile = "batchfileDADA2.list"
 
-libraries = [x for x in glob("data/X201SC19122834-Z01-F001/raw_data/*") if os.path.isdir(x)]
+libraries = [x for x in glob("data/rawdata/*") if os.path.isdir(x)]
 
 for library_root in libraries:
     library_id = os.path.basename(library_root)
@@ -115,23 +115,27 @@ for library_root in libraries:
             ) << """
                 mkdir -p {folderAS}
                 mkdir -p {folderSS}
-                if grep -q "Empty file  {inputASF}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
+                ASFfilesize=`stat -c %s {inputASF}`
+                if [ $ASFfilesize = 0 ]
                 then
                  touch {outputASF} {outputASR}
                 fi
-                if grep -q "Empty file  {inputASR}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
+                ASRfilesize=`stat -c %s {inputASR}`
+                if [ $ASRfilesize = 0 ]
                 then
                  touch {outputASF} {outputASR}
                 fi
-                if grep -q "Empty file  {inputSSF}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
+                SSFfilesize=`stat -c %s {inputSSF}`
+                if [ $SSFfilesize = 0 ]
                 then
                  touch {outputSSF} {outputSSR}
                 fi
-                if grep -q "Empty file  {inputSSR}" ".gwf/logs/sickle_{project_name}_{library_id}_{tag_id}.stdout"
+                SSRfilesize=`stat -c %s {inputSSR}`
+                if [ $SSRfilesize = 0 ]
                 then
                  touch {outputSSF} {outputSSR}
-                fi     
-                Rscript ./scripts/match_pairs.r {inputASF},{inputASR},{inputSSF},{inputSSR} {outputASF},{outputASR},{outputSSF},{outputSSR} 
+                fi
+               Rscript ./scripts/match_pairs.r {inputASF},{inputASR},{inputSSF},{inputSSR} {outputASF},{outputASR},{outputSSF},{outputSSR} 
                  if grep -q "removed all reads: {outputASF}" ".gwf/logs/match_{project_name}_{library_id}_{tag_id}.stderr"
                  then
                   touch {outputASF}
