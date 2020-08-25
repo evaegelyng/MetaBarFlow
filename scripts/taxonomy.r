@@ -12,11 +12,22 @@ print(args[2])
 # Read the completed blast results into a table
 IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 
+library(stringr)
+
+# The following is only for when BLAST search was done against the combined BOLD+nt database "Eukaryota_COI"
+#seqtab <- data.frame(readLines("/faststorage/project/eDNA/blastdb/Eukaryota_COI/taxid_process/Eukaryota_informative_name_table.tsv"))
+#seqtab$NWord <- sapply(strsplit(as.character(seqtab[,1]), " "), length)
+#colnames(seqtab)<-c("Name","NWord")
+#seqtab$Taxa <- ifelse(seqtab[,2] == 4,word(seqtab[,1],2,sep=" "),word(seqtab[,1],2,3,sep=" "))
+#seqtab$TaxID <- ifelse(seqtab[,2] == 4,word(seqtab[,1],3,sep=" "),word(seqtab[,1],4,sep=" "))
+#IDtable$V16 <- seqtab$Taxa[match(IDtable$V15,seqtab$TaxID)]
+#IDtable$V16<-gsub(" "," ",IDtable$V16)
+
 # Read the possible problematic TaxIDs as a table
 MergedTaxIDs<-read.table("~/eDNA/faststorage/blastdb/nt-old-30032020/taxdump/MergedTaxIDs", header=TRUE)
 
 # Add header information
-names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","sgi","ssciname","staxid")
+names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","ssciname","staxid")
 
 # Extract only those rows where the qcovs score is 100. First check if qcovs contains hits with 100%
     if (max(IDtable$qcovs) == 100 ) {
@@ -34,12 +45,52 @@ library(taxizedb)
 library(dplyr)
 library(tidyr)
 
+# The following is to define for each query sequence an "upper margin" (threshold) of sequence similarity, which will determine whether a BLAST hit will be taken into account in the taxonomic classification of the query
+
+# First, determine maximum and minimum similarity (pident) for each qseqid+taxid combination. Scientific names are unique for each taxid, and can thus also be included in the table.
+summary<-do.call(data.frame,aggregate(pident~qseqid+staxid+ssciname,data=IDtable,FUN = function(x) c(max = max(x), min = min(x),n = length(x))))
+
+# Sort the taxid hits by descending maximum similarity for each qseqid
+summary<-summary[with(summary,order(summary$qseqid,-summary$pident.max)),]
+
+# For each qseqid, determine the minimum similarity for the best matching taxid (first row after sorting) 
+summary$pident.min.best<-summary$pident.max  # Just using pident.max to fill the column temporarily
+for (i in unique (summary$qseqid)){
+  summary[summary$qseqid==i,]$pident.min.best<-summary[summary$qseqid==i,]$pident.min[1]}
+
+# For each qseqid+taxid combination, determine the difference between the maximum similarity obtained for this combination, and the minimum similarity obtained for the best matching taxid
+summary$pident.diff<-summary$pident.max  # Just using pident.max to fill the column temporarily
+for (i in unique (summary$qseqid)){
+  summary[summary$qseqid==i,]$pident.diff<-summary[summary$qseqid==i,]$pident.min.best-summary[summary$qseqid==i,]$pident.max}
+
+# Add a column that shows whether the present taxid overlaps in sequence similarity with the best matching taxid, and should therefore be included in the taxonomic classification
+summary$include<-ifelse(summary$pident.diff<=0,1,0)
+
+# Calculate the upper margin for each qseqid+taxid combination, as the maximum similarity for this taxid minus the minimum similarity for the best matching taxid
+summary$upper_margin<-summary$pident.max  # Just using pident.max to fill the column temporarily
+for (i in unique (summary$qseqid)){
+  summary[summary$qseqid==i,]$upper_margin<-summary[summary$qseqid==i,]$pident.max[1]-summary[summary$qseqid==i,]$pident.min.best[1]}
+
+# Write all the calculated values to a file
+write.table(summary,file=args[2],sep="\t",row.names=FALSE)
+
+# Collapse the table to one (the first) row per qseqid
+summary.best<-distinct(summary,qseqid,.keep_all=TRUE)
+
+# Creat new column for upper margin in IDtable
+IDtable$upper_margin <- IDtable$pident
+
+# Add upper margins to IDtable from summary.best table
+for (i in unique (IDtable$qseqid)){
+   IDtable[IDtable$qseqid==i,]$upper_margin<-summary.best[summary.best$qseqid==i,]$upper_margin
+}
+
 # Define the four taxonomy script functions (where FunctionX is a wrapper that runs 1, 2, 3 in one go):
 
 # FunctionX
 # Wrapper function using the three main functions - each step can also be done manually
-assign_taxonomy <- function(table,upper_margin=0.5,lower_margin=2, remove = c("")) {
-  pf <- prefilter(table, upper_margin, lower_margin, remove)
+assign_taxonomy <- function(table,lower_margin=2, remove = c("")) {       # Eva removed constant upper margin specification
+  pf <- prefilter(table, lower_margin, remove)   # Eva removed constant upper margin specification
   
   # Replace old tax ids with new ones if they have a match in mergedtaxids dataframe #CKF 
   pf$OldTaxID<-pf$staxid # Making an extra column on pf, same as staxid but with a new name so it can match with the mergedtaxid dataframe
@@ -68,7 +119,7 @@ assign_taxonomy <- function(table,upper_margin=0.5,lower_margin=2, remove = c(""
   
   gc <- get_classification(pf_new)
   cf <- evaluate_classification(gc[[1]])     # AGR # gc[2] is the wrong taxid not classified 
-  result <- list(classified_table=cf$taxonon_table, all_classifications=cf$all_taxa_table, all_classifications_summed=cf$all_taxa_table_summed,upper=upper_margin, lower=lower_margin, removed=remove)
+  result <- list(classified_table=cf$taxonon_table, all_classifications=cf$all_taxa_table, all_classifications_summed=cf$all_taxa_table_summed, lower=lower_margin, removed=remove)  # Eva removed upper_margin
   if (length(gc[[2]]) != 0) {
     print(paste0("Taxids not found in the classification: ", gc[2])) # AGR - Print the list of not matched taxids  
   }
@@ -77,7 +128,7 @@ assign_taxonomy <- function(table,upper_margin=0.5,lower_margin=2, remove = c(""
 
 # Function1
 # Filter data OTU-wise according to upper and lower margin set, and taxa to exclude
-prefilter <- function(IDtable, upper_margin=0.5, lower_margin=2, remove = c("uncultured", "environmental")) {
+prefilter <- function(IDtable, lower_margin=2, remove = c("uncultured", "environmental")) {   # Eva removed constant upper_margin specification
   new_IDtable <- IDtable[0,] # prepare filtered matchlist
   IDtable <- IDtable[!IDtable$staxid == "N/A",]
   ids <- names(table(IDtable$qseqid))
@@ -88,12 +139,12 @@ prefilter <- function(IDtable, upper_margin=0.5, lower_margin=2, remove = c("unc
     if (nchar(remove[1])>0) {
       test2 <- test
       for (rm in 1:length(remove)) {
-        test2 <- test2[!grepl(remove[rm], test2$ssciname,ignore.case = TRUE),]
+        test2 <- test2[!grepl(remove[rm], test2$ssciname,ignore.case = TRUE),] 
       }
       if (nrow(test2) > 1) {test <- test2}
     }
     max <- max(test$pident)
-    upper <- max-upper_margin
+    upper <- max-max(test2$upper_margin)
     lower <- max-lower_margin
     test <- test[which(test$pident >= lower),] # select all lines for a query
     test$margin <- "lower"
@@ -159,7 +210,7 @@ get_classification <- function(IDtable2) {
     }
   }
   taxonomic_info <- merge(IDtable2,output,by = "staxid", all=TRUE)
-  taxonomic_info$species[is.na(taxonomic_info$species)] <- taxonomic_info$ssciname[is.na(taxonomic_info$species)]
+  taxonomic_info$species[is.na(taxonomic_info$species)] <- taxonomic_info$ssciname[is.na(taxonomic_info$species)] 
   return(list(taxonomic_info,wrong_taxid_matches))
 }
 
@@ -174,9 +225,9 @@ evaluate_classification <- function(classified) {
     print(paste0("last step: progress: ", round(((i/length(ids)) * 100),0) ,"%")) # make a progressline
     test <- classified[which(classified$qseqid == name),]
     test2 <- test %>% filter(margin == "upper")
-    test2$score <- 100*(1/test2$evalue)/sum(1/test2$evalue)  # HER BEREGSES SCOREN FOR ALLE MATCHES PER OTU
+    test2$score <- 100*(1/test2$evalue)/sum(1/test2$evalue)  # HER BEREGNES SCOREN FOR ALLE MATCHES PER OTU
     test4 <- test2 %>% filter(margin == "upper") %>%
-      dplyr::select(margin,qseqid,sgi,sseqid,staxid,pident,score,qcovs,kingdom,phylum,class,order,family,genus,species) %>% 
+      dplyr::select(margin,qseqid,sseqid,staxid,pident,score,qcovs,kingdom,phylum,class,order,family,genus,species) %>% 
       group_by(qseqid,kingdom, phylum,class,order,family,genus,species) %>% 
       mutate(species_score=sum(score)) %>% 
       group_by(qseqid,kingdom, phylum,class,order,family,genus) %>% 
@@ -193,7 +244,7 @@ evaluate_classification <- function(classified) {
       mutate(kingdom_score=sum(score)) %>% ungroup() %>%
       arrange(-kingdom_score,-phylum_score,-class_score,-order_score,-family_score,-genus_score,-species_score)
     test3 <- test4 %>% slice(1)
-    test5 <- test4 %>% distinct(qseqid,sgi,sseqid,pident,qcovs,kingdom,phylum,class,order,family,genus,species,kingdom_score,phylum_score,class_score,order_score,family_score,genus_score,species_score) 
+    test5 <- test4 %>% distinct(qseqid,sseqid,pident,qcovs,kingdom,phylum,class,order,family,genus,species,kingdom_score,phylum_score,class_score,order_score,family_score,genus_score,species_score) 
     string1 <- test %>% dplyr::select(species,pident) %>% 
       distinct(species,pident) %>% arrange(-pident) %>% t()
     string2 <- toString(unlist(string1))
@@ -215,10 +266,10 @@ evaluate_classification <- function(classified) {
 
 
 # Classify your OTUs by running the wrapper (functionX) "assign_taxonomy" like this. Consider whether it makes sense to remove specific hits or taxa from the evaluation (see explanation below):
-my_classified_result <- assign_taxonomy(IDtable, upper_margin = 0.5, lower_margin = 2, remove = c("uncultured", "environmental"))
+my_classified_result <- assign_taxonomy(IDtable, lower_margin = 2, remove = c("uncultured", "environmental")) # Eva removed constant upper_margin specification
 
 #Write the result to a table
-write.table(my_classified_result$classified_table, args[2], sep = "\t", quote = F, row.names = F)
+write.table(my_classified_result$classified_table, args[3], sep = "\t", quote = F, row.names = F)
 
 # Explanation to input
 #   INPUT.blasthits is the blast-results

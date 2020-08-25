@@ -44,8 +44,8 @@ for (f in fileList[-1]){
   nochim_sumtable_all <- sumSequenceTables(nochim_sumtable_all,sumtable_nochim)
 }
 
-stBoth <- file.path(args[1],"seqtab_Both")
-stnsBoth <- file.path(args[1],"seqtab.nochim_Both")
+stBoth <- file.path(args[2],"seqtab_Both")
+stnsBoth <- file.path(args[2],"seqtab.nochim_Both")
 saveRDS(sumtable_all,stBoth)
 saveRDS(nochim_sumtable_all,stnsBoth)
 
@@ -55,10 +55,10 @@ trans_nochim_sumtable <- as.data.frame(t(nochim_sumtable_all))
 sequences <- row.names(trans_nochim_sumtable)
 #Assign new rownames
 row.names(trans_nochim_sumtable) <- paste0("seq",seq.int(nrow(trans_nochim_sumtable)))
-tbname <- file.path(args[1],"DADA2_nochim.table")
+tbname <- file.path(args[2],"DADA2_nochim.table")
 {write.table(trans_nochim_sumtable,tbname,sep="\t",col.names = NA, quote=FALSE)}
 #Extract OTUs (sequences)
-sinkname <- file.path(args[1],"DADA2_nochim.otus")
+sinkname <- file.path(args[2],"DADA2_nochim.otus")
 {
   sink(sinkname)
   for (seqX in seq.int(nrow(trans_nochim_sumtable))) {
@@ -72,7 +72,7 @@ sinkname <- file.path(args[1],"DADA2_nochim.otus")
 
 #Define function to extract sequences sample-wise
 extrSamDADA2 <- function(my_table) {
-  out_path <- file.path(args[1],"DADA2_extracted_samples_nochim")
+  out_path <- file.path(args[2],"DADA2_extracted_samples_nochim")
   if(!file_test("-d", out_path)) dir.create(out_path)
   for (sampleX in seq(1:dim(my_table)[1])){
     sinkname <- file.path(out_path, paste0(rownames(my_table)[sampleX],".fas"))
@@ -102,10 +102,10 @@ trans_raw_sumtable <- as.data.frame(t(sumtable_all))
 sequences <- row.names(trans_raw_sumtable)
 #Assign new rownames
 row.names(trans_raw_sumtable) <- paste0("seq",seq.int(nrow(trans_raw_sumtable)))
-tbname <- file.path(args[1],"DADA2_raw.table")
+tbname <- file.path(args[2],"DADA2_raw.table")
 {write.table(trans_raw_sumtable,tbname,sep="\t",col.names = NA, quote=FALSE)}
 #Extract OTUs (sequences)
-sinkname <- file.path(args[1],"DADA2_raw.otus")
+sinkname <- file.path(args[2],"DADA2_raw.otus")
 {
   sink(sinkname)
   for (seqX in seq.int(nrow(trans_raw_sumtable))) {
@@ -119,7 +119,7 @@ sinkname <- file.path(args[1],"DADA2_raw.otus")
 
 #Define function to extract sequences sample-wise
 extrSamDADA2 <- function(my_table) {
-  out_path <- file.path(args[1],"DADA2_extracted_samples_raw")
+  out_path <- file.path(args[2],"DADA2_extracted_samples_raw")
   if(!file_test("-d", out_path)) dir.create(out_path)
   for (sampleX in seq(1:dim(my_table)[1])){
     sinkname <- file.path(out_path, paste0(rownames(my_table)[sampleX],".fas"))

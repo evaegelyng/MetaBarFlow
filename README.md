@@ -72,6 +72,8 @@
 or
  
   `tar -xvf filename.tar`
+  
+#### After unzipping, remember to move the zipped data folder to an independent location, such as a portable hard drive for backup. This is to avoid unnecessary use of expensive server backup storage and to have a local backup, which is independent of the server, and faster to retrieve. 
 
 #### Check md5 sum for the fastq.gz files in each library to make sure they are intact
 

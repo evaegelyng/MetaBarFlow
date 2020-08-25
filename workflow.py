@@ -3,7 +3,7 @@ import os, sys
 import math
 from glob import glob
 
-project_name = "Ilulissat"
+project_name = "YOUR_PROJECT"
 
 gwf = Workflow(defaults={"account": "edna"}) 
 
@@ -11,7 +11,7 @@ gwf = Workflow(defaults={"account": "edna"})
 
 batchfile = "batchfileDADA2.list"
 
-libraries = [x for x in glob("data/rawdata/*") if os.path.isdir(x)]
+libraries = [x for x in glob("YOUR_PATH/backup/data/raw_data/*") if os.path.isdir(x)]
 
 for library_root in libraries:
     library_id = os.path.basename(library_root)
@@ -215,45 +215,44 @@ for library_root in libraries:
  
 output_files = []
     
-output_files.append("tmp/seqtab_Both")
-output_files.append("tmp/seqtab.nochim_Both")
-output_files.append("tmp/DADA2_raw.table")
-output_files.append("tmp/DADA2_raw.otus")
-output_files.append("tmp/DADA2_nochim.table")
-output_files.append("tmp/DADA2_nochim.otus")
+output_files.append("results/seqtab_Both")
+output_files.append("results/seqtab.nochim_Both")
+output_files.append("results/DADA2_raw.table")
+output_files.append("results/DADA2_raw.otus")
+output_files.append("results/DADA2_nochim.table")
+output_files.append("results/DADA2_nochim.otus")
     
 gwf.target(
-   name="sum_libraries_{}".format(project_name),
+   name="sum_libraries_{}".format(project_name), # f'sum_libraries_{project_name}' is equivalent
    inputs=input_files,
    outputs=output_files,
    cores=1,
-   memory="2g",
+   memory="16g",
    walltime="1:00:00",
  ) << """
-   Rscript ./scripts/sum_libraries.r tmp/
-   """.format(library_id=library_id)                
+   Rscript ./scripts/sum_libraries.r tmp/ results/
+   """.format()                
 
 #BLAST search and taxonomic assignment
 
 ###Split fasta file (the nochim one with chimeras removed) into K parts
 def splitter(inputFile, K=99):
     inputs = [inputFile]
-    outIndex = inputFile + '.seqkit.fai'
+    outputs = ["tmp/split/split.log.txt"]
     options = {
         'cores': 1,
         'memory': '2g',
         'walltime': '1:00:00'
     }
     spec = '''
-    seqkit split {inputFile} -f -p {K} -2
+    seqkit split -O tmp/split/ {inputFile} -p {K} -2
+    echo "hello" > tmp/split/split.log.txt
     '''.format(inputFile=inputFile, K=K)
-    outFiles = glob(inputFile + '.split/DADA2_nochim.part*.fasta')
-    outputs = outFiles + [outIndex]
     return inputs, outputs, options, spec
 
 #####blast a single k-th file
-def blaster(fileName, k, outFolder):
-    inputFasta = fileName+'.split/'+'DADA2_nochim.part_'+'{:0>3d}'.format(k)+'.fasta'
+def blaster(k, outFolder):
+    inputFasta = 'tmp/split/DADA2_nochim.part_'+'{:0>3d}'.format(k)+'.fasta'
     inputs = [inputFasta]
     outBlast = outFolder + '/blast.' + str(k) + '.blasthits'
     outLog = outFolder + '/blast.' + str(k) + '.txt'
@@ -270,13 +269,13 @@ def blaster(fileName, k, outFolder):
     export BLASTDB=/faststorage/project/eDNA/blastdb/nt_200401/
     mkdir -p {out}
     echo "RUNNING THREAD {k} BLAST"
-    blastn -db /faststorage/project/eDNA/blastdb/nt_200401/nt -max_target_seqs 500 -num_threads 4 -outfmt "6 std qlen qcovs sgi sscinames staxid" -out {outBlast} -qcov_hsp_perc 90 -perc_identity 80 -query {inputFasta}
+    blastn -db /faststorage/project/eDNA/blastdb/nt_200401/nt -max_target_seqs 500 -num_threads 4 -outfmt "6 std qlen qcovs sscinames staxid" -out {outBlast} -qcov_hsp_perc 90 -perc_identity 80 -query {inputFasta}
     echo "hello" > {outLog}
     echo "DONE THREAD {k}"
     '''.format(out=outFolder, k=k, inputFasta=inputFasta, outBlast=outBlast, outLog=outLog)
     return inputs, outputs, options, spec
 
-def taxonomy(fileName, taxonomyFolder, blastFolder, k):
+def taxonomy(taxonomyFolder, blastFolder, k):
     inputFile = blastFolder + '/blast.' + str(k) + '.blasthits'
     inputs = [inputFile , blastFolder + '/blast.' + str(k) + '.txt']
     outputFile = taxonomyFolder + '/taxonomy.' + str(k) + '.txt'
@@ -302,22 +301,22 @@ def taxonomy(fileName, taxonomyFolder, blastFolder, k):
     '''.format(taxonomyFolder=taxonomyFolder, inputFile=inputFile, outputFile=outputFile) 
     return inputs, outputs, options, spec
 
-inputName = 'tmp/DADA2_nochim.otus'
+inputName = 'results/DADA2_nochim.otus'
 
 gwf.target_from_template( 'split', splitter(inputFile=inputName) )
 
-parts=glob('tmp/DADA2_nochim.otus.split/DADA2_nochim.part*.fasta')
+parts=glob('tmp/split/DADA2_nochim.part*.fasta')
 K=len(parts)
                                                                 
 for k in range(1,K+1):
-  gwf.target_from_template( 'blaster_{}'.format(k), blaster(fileName=inputName, k=k, outFolder='tmp/blast') )
-  gwf.target_from_template( 'taxonomy_{}'.format(k), taxonomy(fileName=inputName, taxonomyFolder='tmp/taxonomy', blastFolder='tmp/blast', k=k) )
+  gwf.target_from_template( 'blaster_{}'.format(k), blaster(k=k, outFolder='tmp/blast') )
+  gwf.target_from_template( 'taxonomy_{}'.format(k), taxonomy(taxonomyFolder='tmp/taxonomy', blastFolder='tmp/blast', k=k) )
 
 ### Combine all the small taxonomical classfication files into one large file
 
 input_files = glob('tmp/taxonomy/taxonomy*.txt')
  
-output_files = ['tmp/taxonomy/classified.txt']
+output_files = ['results/classified.txt']
     
 gwf.target(
    name="combine_taxonomy_{}".format(project_name),
@@ -327,9 +326,9 @@ gwf.target(
    memory="1g",
    walltime="00:10:00",
  ) << """
-    head -n1 tmp/taxonomy/taxonomy.1.txt > tmp/taxonomy/classified.txt
+    head -n1 tmp/taxonomy/taxonomy.1.txt > results/classified.txt
     for fname in tmp/taxonomy/taxonomy*.txt
     do
-        tail -n +2 $fname >> tmp/taxonomy/classified.txt
+        tail -n +2 $fname >> results/classified.txt
     done
    """                
