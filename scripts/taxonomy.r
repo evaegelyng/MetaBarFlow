@@ -14,20 +14,19 @@ IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 
 library(stringr)
 
-# The following is only for when BLAST search was done against the combined BOLD+nt database "Eukaryota_COI"
-#seqtab <- data.frame(readLines("/faststorage/project/eDNA/blastdb/Eukaryota_COI/taxid_process/Eukaryota_informative_name_table.tsv"))
-#seqtab$NWord <- sapply(strsplit(as.character(seqtab[,1]), " "), length)
-#colnames(seqtab)<-c("Name","NWord")
-#seqtab$Taxa <- ifelse(seqtab[,2] == 4,word(seqtab[,1],2,sep=" "),word(seqtab[,1],2,3,sep=" "))
-#seqtab$TaxID <- ifelse(seqtab[,2] == 4,word(seqtab[,1],3,sep=" "),word(seqtab[,1],4,sep=" "))
-#IDtable$V16 <- seqtab$Taxa[match(IDtable$V15,seqtab$TaxID)]
-#IDtable$V16<-gsub(" "," ",IDtable$V16)
+seqtab <- data.frame(readLines("/faststorage/project/eDNA/blastdb/Eukaryota_COI/taxid_process/Eukaryota_informative_name_table.tsv"))
+seqtab$NWord <- sapply(strsplit(as.character(seqtab[,1]), " "), length)
+colnames(seqtab)<-c("Name","NWord")
+seqtab$Taxa <- ifelse(seqtab[,2] == 4,word(seqtab[,1],2,sep=" "),word(seqtab[,1],2,3,sep=" "))
+seqtab$TaxID <- ifelse(seqtab[,2] == 4,word(seqtab[,1],3,sep=" "),word(seqtab[,1],4,sep=" "))
+IDtable$V16 <- seqtab$Taxa[match(IDtable$V15,seqtab$TaxID)]
+IDtable$V16<-gsub(" "," ",IDtable$V16)
 
 # Read the possible problematic TaxIDs as a table
 MergedTaxIDs<-read.table("~/eDNA/faststorage/blastdb/nt-old-30032020/taxdump/MergedTaxIDs", header=TRUE)
 
 # Add header information
-names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","ssciname","staxid")
+names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","staxid","ssciname")
 
 # Extract only those rows where the qcovs score is 100. First check if qcovs contains hits with 100%
     if (max(IDtable$qcovs) == 100 ) {

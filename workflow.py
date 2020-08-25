@@ -3,7 +3,7 @@ import os, sys
 import math
 from glob import glob
 
-project_name = "YOUR_PROJECT"
+project_name = "CoastSeq"
 
 gwf = Workflow(defaults={"account": "edna"}) 
 
@@ -11,7 +11,7 @@ gwf = Workflow(defaults={"account": "edna"})
 
 batchfile = "batchfileDADA2.list"
 
-libraries = [x for x in glob("YOUR_PATH/backup/data/raw_data/*") if os.path.isdir(x)]
+libraries = [x for x in glob("/faststorage/project/eDNA/Velux/CoastSequence/Spring/LerayXT/backup/data/raw_data/*") if os.path.isdir(x)]
 
 for library_root in libraries:
     library_id = os.path.basename(library_root)
@@ -266,10 +266,10 @@ def blaster(k, outFolder):
         'walltime': '4:00:00'
     }
     spec = '''
-    export BLASTDB=/faststorage/project/eDNA/blastdb/nt_200401/
+    export BLASTDB=/faststorage/project/eDNA/blastdb/Eukaryota_COI/BLAST_db/
     mkdir -p {out}
     echo "RUNNING THREAD {k} BLAST"
-    blastn -db /faststorage/project/eDNA/blastdb/nt_200401/nt -max_target_seqs 500 -num_threads 4 -outfmt "6 std qlen qcovs sscinames staxid" -out {outBlast} -qcov_hsp_perc 90 -perc_identity 80 -query {inputFasta}
+    blastn -db /faststorage/project/eDNA/blastdb/Eukaryota_COI/BLAST_db/Eukaryota_BAR.db -max_target_seqs 500 -num_threads 4 -outfmt "6 std qlen qcovs staxid" -out {outBlast} -qcov_hsp_perc 90 -perc_identity 80 -query {inputFasta}
     echo "hello" > {outLog}
     echo "DONE THREAD {k}"
     '''.format(out=outFolder, k=k, inputFasta=inputFasta, outBlast=outBlast, outLog=outLog)
@@ -278,8 +278,9 @@ def blaster(k, outFolder):
 def taxonomy(taxonomyFolder, blastFolder, k):
     inputFile = blastFolder + '/blast.' + str(k) + '.blasthits'
     inputs = [inputFile , blastFolder + '/blast.' + str(k) + '.txt']
+    summaryFile = taxonomyFolder + '/summary.' + str(k) + '.txt'
     outputFile = taxonomyFolder + '/taxonomy.' + str(k) + '.txt'
-    outputs = [outputFile]
+    outputs = [summaryFile, outputFile]
     options = {
         'cores': 1,
         'memory': '32g',
@@ -291,14 +292,14 @@ def taxonomy(taxonomyFolder, blastFolder, k):
     # Check if blast file is empty
     if [ `cat {inputFile} | wc -l` != 0 ]
     then
-      Rscript scripts/taxonomy.r {inputFile} {outputFile}
+      Rscript scripts/taxonomy.r {inputFile} {summaryFile} {outputFile}
     else
       touch {outputFile}
     fi
     if grep -q "Query coverage is less than 100% for all hits" ".gwf/logs/taxonomy_" + str(k) + ".stdout"
     then
       touch {outputFile}
-    '''.format(taxonomyFolder=taxonomyFolder, inputFile=inputFile, outputFile=outputFile) 
+    '''.format(taxonomyFolder=taxonomyFolder, inputFile=inputFile, summaryFile=summaryFile, outputFile=outputFile) 
     return inputs, outputs, options, spec
 
 inputName = 'results/DADA2_nochim.otus'
@@ -312,6 +313,27 @@ for k in range(1,K+1):
   gwf.target_from_template( 'blaster_{}'.format(k), blaster(k=k, outFolder='tmp/blast') )
   gwf.target_from_template( 'taxonomy_{}'.format(k), taxonomy(taxonomyFolder='tmp/taxonomy', blastFolder='tmp/blast', k=k) )
 
+### Combine all the small taxonomical summary files into one large file
+
+input_files = glob('tmp/taxonomy/summary*.txt')
+ 
+output_files = ['results/summary.txt']
+    
+gwf.target(
+   name="combine_summary_{}".format(project_name),
+   inputs=input_files,
+   outputs=output_files,
+   cores=1,
+   memory="1g",
+   walltime="00:10:00",
+ ) << """
+    head -n1 tmp/taxonomy/summary.1.txt > results/summary.txt
+    for fname in tmp/taxonomy/summary*.txt
+    do
+        tail -n +2 $fname >> results/summary.txt
+    done
+   """    
+      
 ### Combine all the small taxonomical classfication files into one large file
 
 input_files = glob('tmp/taxonomy/taxonomy*.txt')
