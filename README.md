@@ -114,7 +114,10 @@ or
 #### By adding the name of a specific target after the above command, you can see the status of this target.
 #### As the function splitting your fasta file of OTUs before BLASTing may output a smaller number of files than the 99 files specified (it seems the software has certain thresholds for the number of sequences that can go in each file), double-check in the .stderr log file that the number of sequences of the separate files add up to the total sequence number.
 
-#### Increase no. of cores, memory requirements and/or time limits if needed, or decrease if you need less resources. 
+#### Increase no. of cores, memory requirements and/or time limits if needed, or decrease if you need less resources. You can check your realized resource use for a target using the package gwf-utilization:
+
+   'conda install -c micknudsen gwf-utilization'
+   'gwf utilization'
 
 #### The outputs from this workflow that you will normally use for further analyses are primarily the ASV table of which unique sequences are in which samples (DADA2_nochim.table in tmp) and the taxonomic classification of these ASVs (classified.txt in tmp/taxonomy). Further analyses can be done on your local computer in R.
 
