@@ -116,8 +116,11 @@ or
 
 #### Increase no. of cores, memory requirements and/or time limits if needed, or decrease if you need less resources. You can check your realized resource use for a target using the package gwf-utilization:
 
-   `conda install -c micknudsen gwf-utilization`
-   `gwf utilization`
+```
+   conda install -c micknudsen gwf-utilization
+   
+   gwf utilization
+```
 
 #### The outputs from this workflow that you will normally use for further analyses are primarily the ASV table of which unique sequences are in which samples (DADA2_nochim.table in tmp) and the taxonomic classification of these ASVs (classified.txt in tmp/taxonomy). Further analyses can be done on your local computer in R.
 
