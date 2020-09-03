@@ -123,5 +123,3 @@ or
 ```
 
 #### The outputs from this workflow that you will normally use for further analyses are primarily the ASV table of which unique sequences are in which samples (DADA2_nochim.table in tmp) and the taxonomic classification of these ASVs (classified.txt in tmp/taxonomy). Further analyses can be done on your local computer in R.
-
-#### NB! Marie Lund at Microbiology recommends to do dada2 cleaning before demultiplexing! Perhaps this should be implemented
