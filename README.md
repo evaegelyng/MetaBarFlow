@@ -1,4 +1,4 @@
-### This workflow is designed for processing fastq files from Illumina sequencing of metabarcoding libraries. I.e. sequencing libraries built on pools of amplicons from complex samples (e.g. eDNA samples or bulk samples with DNA from several taxa), which have each been PCR-amplified using a unique combination of oligonucleotide tags on the primers. The workflow operates with amplicon sequence variants (ASVs) throughout, i.e. sequences are not collapsed into OTUs. The workflow includes demultiplexing, quality and error filtering, BLAST searching against GenBank's nt database, and taxonomic classification of the ASVs based on the BLAST hits. The main outputs of this workflow are an ASV table (which ASVs are found in which samples) and the taxonomic classification of these ASVs. Enjoy!
+### This workflow is designed for processing fastq files from Illumina sequencing of metabarcoding libraries. I.e. sequencing libraries built on pools of amplicons from complex samples (e.g. eDNA samples or bulk samples with DNA from several taxa), which have each been PCR-amplified using a unique combination of oligonucleotide tags on the primers. The workflow operates with amplicon sequence variants (ASVs) throughout, i.e. sequences are not collapsed into OTUs. The workflow includes demultiplexing, quality and error filtering, BLAST searching against a local sequence database, and taxonomic classification of the ASVs based on the BLAST hits. The main outputs of this workflow are an ASV table (which ASVs are found in which samples) and the taxonomic classification of these ASVs. Enjoy!
 
 #### Make overall directories
 
@@ -23,47 +23,24 @@
   
   ln -s backup/README.txt README.txt
 ```
-
-#### Make a folder with a subfolder for each person involved in the (data analysis of) the project
-```
-  mkdir people
-
-  mkdir name1
-
-  mkdir name2
-```
-
-#### Duplicate root folder hierarchy in each person's folder
-  
+ 
 #### Create a conda environment based on the description file
 
   `conda env create --name projectname -f environment.yml`
-
-#### Install R package taxizedb. In the shell, run
-
-```  
-  git config --global http.sslCAInfo /etc/ssl/certs/ca-bundle.crt # Network goes into a proxy, we need to give the certificate of the proxy to git        
   
-  unset https_proxy # Unable the proxy anyway
-  
-  unset http_proxy
+#### If you cannot create the environment based on the description file (updated packages may cause problems), create your own environment, beginning with the packages that are directly called in the scripts (cutadapt, sickle, taxizedb etc.). If you still have trouble once you have installed these and their dependencies, check the list of packages specified in the file Clean_210922.yml. This file contains only the packages that were common between currently working environments of Mads, Martin and Eva. It can be helpful to use mamba to install packages, as it is faster than conda. 
+
+#### The taxizedb NCBI database should be updated regularly to keep up to date with the GenBank nt database (there seems to be some lag in the taxizedb online database) 
+
 ```
-
-#### In R (still on the cluster, type R to start), run 
-
-```  
-  devtools::install_github("ropensci/taxizedb")
-  
   library("taxizedb")
   
   db_download_ncbi()
 ```
 
-#### The taxizedb NCBI database should be updated regularly to keep up to date with the GenBank nt database (there seems to be some lag in the taxizedb online database) 
+#### In the root data folder, download the raw sequencing data using wget and the csv file from Novogene ("Export link" on the data website):
 
-#### In the root data folder, download the raw sequencing data using wget directly in the terminal:
-
-  `nohup wget --continue --quiet URL &`
+  `wget -c --progress=dot:giga --timeout=120 --waitretry=60 --tries=10000 --retry-connrefused -i YOUR_CSV.csv`
  
 #### Unzip the tar.gz or .tar file 
 
@@ -75,29 +52,35 @@ or
   
 #### After unzipping, remember to move the zipped data folder to an independent location, such as a portable hard drive for backup. This is to avoid unnecessary use of expensive server backup storage and to have a local backup, which is independent of the server, and faster to retrieve. 
 
+#### Remember to check the sequencing report to get an overview of the quality and amount of data. If this is not satisfactory, consider asking for resequencing.
+
 #### Check md5 sum for the fastq.gz files in each library to make sure they are intact
 
   `md5sum -c MD5.txt`
   
-#### Unzip the fastq.gz files
+#### Unzip the fastq.gz files in each library
 
   `gunzip *gz`
-  
-#### In each library data folder, make a file named tags.txt containing the sample names and corresponding forward and reverse tag sequences (see an example in data folder of this repository). Remember to put the library/PCR replicate number at the end of each sample name (e.g. "SAMPLE1_1" for library 1, "SAMPLE1_2" for library 2 and so on), so that PCR replicates will be kept separate when the data from the different libraries are merged. You can start by making the file for library 1 in excel, then save as tab separated file, transfer to the server, change from Windows to UNIX format (important!) and then use this file as a template for the remaining libraries (just replace replicate number in the sample names). Ensure that there is one (1) empty line at the end of each file. 
 
-#### In each library data folder, make a file named batchfileDADA2.list containing the fastq file names, the primer sequences, and the minimum length required for a read (unaligned, i.e. forward or reverse read) after trimming of primers and tags (see example in data folder of this repository). If your primers contain inosine bases ("I"), these need to be replaced with "N", as the software does not recognize "I". Again, you can start by making the file for the first library, then copy it to the other libraries like this:
+or if you have many libraries, run the following for the entire raw data folder
 
-  `echo lib1 lib2 | xargs -n 1 cp batchfileDADA2.list`
-  
-#### Then change the fastq file names and the tag file name to the appropriate ones. Make sure that the file is in UNIX format. Again, ensure that there is one (1) empty line at the end of the file.
+  'for i in `find . -name "*.gz"`; do gunzip $i; done &'  
 
-#### If appropriate, change the minimum length requirement in the match_pairs.r script. Check whether it would be appropriate to change any of the options set for the blastn command. In the taxonomy.r script, consider whether you want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Also consider whether the upper and lower margins should be adjusted (see explanation in the script).    
+#### Use the software fastqc (base environment) to further inspect the quality of the data:
 
-#### In the workflow file, replace the project name and the path to the raw data with your own name and path. If appropriate, change the length and quality requirements provided to the sickle command. 
+  'sbatch --account eDNA YOUR_PATH/scripts/fastqc.sh'
+   
+#### In each library data folder, make a tab separated file named tags.txt containing the sample names and corresponding forward and reverse tag sequences (see an example in data folder of this repository). Remember to put the library number/PCR replicate number at the end of each sample name (e.g. "SAMPLE1_1" for library 1, "SAMPLE1_2" for library 2 and so on. Check that none of the sample names themselves contain these endings, e.g. "SAMPLE_1"). This way, PCR replicates will be kept separate when the data from the different libraries are merged. You can start by making the file for library 1 in excel, transfer to the server, change from Windows to UNIX format (important!) and then use this file as a template for the remaining libraries (just replace replicate number in the sample names). 
+
+#### The script create_batch.sh can be used to make a file (batchfileDADA2.list) in each library data folder containing the fastq file names, the primer sequences, and the minimum length required for a read (unaligned, i.e. forward or reverse read) after trimming of primers and tags. Replace the primer sequences and length specified in the script with those appropriate for your own project. If your primers contain inosine bases ("I"), these need to be replaced with "N", as the software does not recognize "I". 
+
+#### If appropriate, change the minimum length requirement in the match_pairs.r script. Check whether it would be appropriate to change any of the options set for the blastn command. In the taxonomy.r script, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Also consider whether the upper and lower margins should be adjusted (see explanation in the script).    
+
+#### In the workflow file, replace the project name and the path to the raw data with your own. If appropriate, change the length and quality requirements provided to the sickle command. 
 
 #### Activate the environment
   
-  `conda activate havblitz`
+  `conda activate YOUR_ENV`
   
 #### Run gwf workflow from main folder
 
@@ -112,6 +95,7 @@ or
   `gwf status` 
 
 #### By adding the name of a specific target after the above command, you can see the status of this target.
+
 #### As the function splitting your fasta file of OTUs before BLASTing may output a smaller number of files than the 99 files specified (it seems the software has certain thresholds for the number of sequences that can go in each file), double-check in the .stderr log file that the number of sequences of the separate files add up to the total sequence number.
 
 #### Increase no. of cores, memory requirements and/or time limits if needed, or decrease if you need less resources. You can check your realized resource use for a target using the package gwf-utilization:
@@ -122,4 +106,6 @@ or
    gwf utilization
 ```
 
-#### The outputs from this workflow that you will normally use for further analyses are primarily the ASV table of which unique sequences are in which samples (DADA2_nochim.table in tmp) and the taxonomic classification of these ASVs (classified.txt in tmp/taxonomy). Further analyses can be done on your local computer in R.
+#### The outputs from this workflow that you will normally use for further analyses are primarily the ASV table of which unique sequences are in which samples (DADA2_nochim.table) and the taxonomic classification of these ASVs (classified.txt). Further analyses can be done on your local computer in R.
+
+#### Remember to backup your raw data, metadata, scripts and conda environment(s), and final outputs!

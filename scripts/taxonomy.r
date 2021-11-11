@@ -8,19 +8,21 @@ args = commandArgs(trailingOnly=TRUE)
 
 print(args[1])
 print(args[2])
+print(args[3])
+
+# Load required packages
+library(taxizedb) # For retrieving taxonomic classification
+library(dplyr)
+library(tidyr)
+
+# Provide API key for NCBI
+options(ENTREZ_KEY="d48b9acccd829282ff4386f716341ed2f608") 
 
 # Read the completed blast results into a table
 IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 
-library(stringr)
-
-seqtab <- data.frame(readLines("/faststorage/project/eDNA/blastdb/Eukaryota_COI/taxid_process/Eukaryota_informative_name_table.tsv"))
-seqtab$NWord <- sapply(strsplit(as.character(seqtab[,1]), " "), length)
-colnames(seqtab)<-c("Name","NWord")
-seqtab$Taxa <- ifelse(seqtab[,2] == 4,word(seqtab[,1],2,sep=" "),word(seqtab[,1],2,3,sep=" "))
-seqtab$TaxID <- ifelse(seqtab[,2] == 4,word(seqtab[,1],3,sep=" "),word(seqtab[,1],4,sep=" "))
-IDtable$V16 <- seqtab$Taxa[match(IDtable$V15,seqtab$TaxID)]
-IDtable$V16<-gsub(" "," ",IDtable$V16)
+# If using nt or BOLD database alone, use the following to add an empty column for sscinames
+IDtable$V16<-"NA"
 
 # Read the possible problematic TaxIDs as a table
 MergedTaxIDs<-read.table("~/eDNA/faststorage/blastdb/nt-old-30032020/taxdump/MergedTaxIDs", header=TRUE)
@@ -36,13 +38,9 @@ names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qs
       stop("Query coverage is less than 100% for all hits", call.=FALSE)
     }
 
-# Optionally make a smaller test table first, to test if the script will run properly, e.g. just the first 100 rows:
-# IDtable <- IDtable[1:100,]
-
-# Load required packages
-library(taxizedb) 
-library(dplyr)
-library(tidyr)
+# Remove hits that are (definitely) not identified to species level
+IDtable <- IDtable %>% mutate(species_level=if_else(sapply(strsplit(as.character(IDtable$ssciname)," "), length)==2, "yes","no"))
+IDtable <- IDtable[IDtable$species_level=="yes",]
 
 # The following is to define for each query sequence an "upper margin" (threshold) of sequence similarity, which will determine whether a BLAST hit will be taken into account in the taxonomic classification of the query
 
@@ -52,36 +50,51 @@ summary<-do.call(data.frame,aggregate(pident~qseqid+staxid+ssciname,data=IDtable
 # Sort the taxid hits by descending maximum similarity for each qseqid
 summary<-summary[with(summary,order(summary$qseqid,-summary$pident.max)),]
 
-# For each qseqid, determine the minimum similarity for the best matching taxid (first row after sorting) 
-summary$pident.min.best<-summary$pident.max  # Just using pident.max to fill the column temporarily
+# Add column indicating the maximum similarity for the best matching taxid(s)
+summary$pident.max.best<-"NA" # Creating new column
 for (i in unique (summary$qseqid)){
-  summary[summary$qseqid==i,]$pident.min.best<-summary[summary$qseqid==i,]$pident.min[1]}
+   summary[summary$qseqid==i,]$pident.max.best<-max(summary[summary$qseqid==i,]$pident.max)}   
 
-# For each qseqid+taxid combination, determine the difference between the maximum similarity obtained for this combination, and the minimum similarity obtained for the best matching taxid
-summary$pident.diff<-summary$pident.max  # Just using pident.max to fill the column temporarily
+# Add column for selecting unique qseqid+taxid combinations
+summary$qseqid_staxid<-paste(summary$qseqid,summary$staxid,sep="_")
+
+# Add a column indicating the best matching taxid(s)
+summary$pident.best<-"NA" # Creating new column
+for (i in unique (summary$qseqid_staxid)){
+    if (summary[summary$qseqid_staxid==i,]$pident.max == summary[summary$qseqid_staxid==i,]$pident.max.best) {
+      summary[summary$qseqid_staxid==i,]$pident.best<-"yes"
+    } else {
+      summary[summary$qseqid_staxid==i,]$pident.best<-"no"
+    }
+}
+
+# For each qseqid, determine the minimum similarity for the best matching taxid(s) 
+summary$pident.min.best<-"NA" # Creating new column
 for (i in unique (summary$qseqid)){
-  summary[summary$qseqid==i,]$pident.diff<-summary[summary$qseqid==i,]$pident.min.best-summary[summary$qseqid==i,]$pident.max}
+   best<- summary[which(summary$qseqid==i & summary$pident.best=="yes"), ]
+   pident.min.best<-min(best$pident.min)
+   summary[summary$qseqid==i,]$pident.min.best<-pident.min.best}   
 
 # Add a column that shows whether the present taxid overlaps in sequence similarity with the best matching taxid, and should therefore be included in the taxonomic classification
-summary$include<-ifelse(summary$pident.diff<=0,1,0)
+summary$include<-ifelse(summary$pident.max>=as.numeric(summary$pident.min.best),1,0)
 
-# Calculate the upper margin for each qseqid+taxid combination, as the maximum similarity for this taxid minus the minimum similarity for the best matching taxid
-summary$upper_margin<-summary$pident.max  # Just using pident.max to fill the column temporarily
-for (i in unique (summary$qseqid)){
-  summary[summary$qseqid==i,]$upper_margin<-summary[summary$qseqid==i,]$pident.max[1]-summary[summary$qseqid==i,]$pident.min.best[1]}
+# Add a column that indicates whether an "included" taxid is more frequent below the upper threshold than above, suggesting possible misidentification
+summary$likely.misid<-"NA"  
+for (i in unique (summary$qseqid_staxid)) {
+    if (sum(summary[summary$qseqid_staxid==i,]$include==1) > 0 & sum(summary[summary$qseqid_staxid==i,]$include==1) < sum(summary[summary$qseqid_staxid==i,]$include==0)) {
+      summary[summary$qseqid_staxid==i,]$likely.misid<-"yes"
+    } else {
+      summary[summary$qseqid_staxid==i,]$likely.misid<-"no"
+    }
+}
 
 # Write all the calculated values to a file
 write.table(summary,file=args[2],sep="\t",row.names=FALSE)
 
-# Collapse the table to one (the first) row per qseqid
-summary.best<-distinct(summary,qseqid,.keep_all=TRUE)
-
-# Creat new column for upper margin in IDtable
-IDtable$upper_margin <- IDtable$pident
-
-# Add upper margins to IDtable from summary.best table
+# Add minimum similarity for the best matching taxid to IDtable from summary table
+IDtable$pident.min.best<-"NA"
 for (i in unique (IDtable$qseqid)){
-   IDtable[IDtable$qseqid==i,]$upper_margin<-summary.best[summary.best$qseqid==i,]$upper_margin
+   IDtable[IDtable$qseqid==i,]$pident.min.best<-summary[summary$qseqid==i,]$pident.min.best[1]
 }
 
 # Define the four taxonomy script functions (where FunctionX is a wrapper that runs 1, 2, 3 in one go):
@@ -92,7 +105,7 @@ assign_taxonomy <- function(table,lower_margin=2, remove = c("")) {       # Eva 
   pf <- prefilter(table, lower_margin, remove)   # Eva removed constant upper margin specification
   
   # Replace old tax ids with new ones if they have a match in mergedtaxids dataframe #CKF 
-  pf$OldTaxID<-pf$staxid # Making an extra column on pf, same as staxid but with a new name so it can match with the mergedtaxid dataframe
+  pf$OldTaxID<-as.numeric(pf$staxid) # Making an extra column on pf, same as staxid but with a new name so it can match with the mergedtaxid dataframe. Eva added as.numeric to avoid error w. incompatible column classes
   pf_intermediate<-pf %>%
   dplyr::left_join(MergedTaxIDs, by=c("OldTaxID"))  # now we can join with MergedTaxIDs using the oldtaxid column
   
@@ -143,7 +156,7 @@ prefilter <- function(IDtable, lower_margin=2, remove = c("uncultured", "environ
       if (nrow(test2) > 1) {test <- test2}
     }
     max <- max(test$pident)
-    upper <- max-max(test2$upper_margin)
+    upper <- as.numeric(test$pident.min.best[1])
     lower <- max-lower_margin
     test <- test[which(test$pident >= lower),] # select all lines for a query
     test$margin <- "lower"
