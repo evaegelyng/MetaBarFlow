@@ -9,8 +9,6 @@ gwf = Workflow(defaults={"account": "edna"})
 
 #Demultiplex
 
-batchfile = "batchfileDADA2.list"
-
 libraries = [x for x in glob("/faststorage/project/eDNA/Velux/CoastSequence/Spring/LerayXT/backup/data/raw_data/*") if os.path.isdir(x)]
 
 for library_root in libraries:
@@ -20,15 +18,17 @@ for library_root in libraries:
     with open(os.path.join(library_root, "tags.txt")) as tags_file:
         for line in tags_file:
             output_files = []
-            tag_id, fseq, rseq = line.split()
-
+            tag_id, fseq, rseq = line.split("\t")
+            if len(tag_id) == 0: #avoid reading empty lines inside the tags file 
+              continue
+            
             output_files.append("tmp/{}/DADA2_AS/{}_R1.fastq".format(library_id, tag_id))
             output_files.append("tmp/{}/DADA2_AS/{}_R2.fastq".format(library_id, tag_id))
             output_files.append("tmp/{}/DADA2_SS/{}_R1.fastq".format(library_id, tag_id))
             output_files.append("tmp/{}/DADA2_SS/{}_R2.fastq".format(library_id, tag_id))
 
             gwf.target(
-                name="demultiplex_{}_{}_{}".format(project_name,library_id, tag_id),
+                name="demultiplex_{}_{}_{}".format(project_name, library_id, tag_id),
                 inputs=input_files,
                 outputs=output_files,
                 cores=1,
@@ -36,8 +36,8 @@ for library_root in libraries:
                 walltime="2:00:00",
             ) << """
                 mkdir -p tmp/{library_id}
-                ./scripts/demultiplex.sh {library_root} tmp/{library_id} {tag_id} {tag_fseq} {tag_rseq} {batchfile}
-            """.format(library_root=library_root, library_id=library_id, tag_id=tag_id, tag_fseq=fseq, tag_rseq=rseq, batchfile=batchfile) 
+                ./scripts/demultiplex.sh {library_root} tmp/{library_id} {tag_id} {tag_fseq} {tag_rseq}
+            """.format(library_root=library_root, library_id=library_id, tag_id=tag_id, tag_fseq=fseq, tag_rseq=rseq) 
             
 #Quality trimming of reads
 for library_root in libraries:
@@ -46,16 +46,20 @@ for library_root in libraries:
     with open(os.path.join(library_root, "tags.txt")) as tags_file:
         for line in tags_file:
             input_files = []
-            tag_id, fseq, rseq = line.split()
-    
+            tag_id, fseq, rseq = line.split("\t")
+            if len(tag_id) == 0: #avoid reading empty lines inside the tags file 
+              continue
+            
             input_files.append("tmp/{}/DADA2_AS/{}_R1.fastq".format(library_id, tag_id))
             input_files.append("tmp/{}/DADA2_AS/{}_R2.fastq".format(library_id, tag_id))
             input_files.append("tmp/{}/DADA2_SS/{}_R1.fastq".format(library_id, tag_id))
             input_files.append("tmp/{}/DADA2_SS/{}_R2.fastq".format(library_id, tag_id))
     
             output_files = []
-            tag_id, fseq, rseq = line.split()
-
+            tag_id, fseq, rseq = line.split("\t")
+            if len(tag_id) == 0: #avoid reading empty lines inside the tags file 
+              continue
+        
             output_files.append("tmp/{}/DADA2_AS/filtered/{}_F_filtered.fastq".format(library_id, tag_id))
             output_files.append("tmp/{}/DADA2_AS/filtered/{}_R_filtered.fastq".format(library_id, tag_id))
             output_files.append("tmp/{}/DADA2_SS/filtered/{}_F_filtered.fastq".format(library_id, tag_id))
@@ -87,7 +91,9 @@ for library_root in libraries:
     with open(os.path.join(library_root, "tags.txt")) as tags_file:
         for line in tags_file:
             input_files = []
-            tag_id, fseq, rseq = line.split()
+            tag_id, fseq, rseq = line.split("\t")
+            if len(tag_id) == 0: #avoid reading empty lines inside the tags file 
+              continue
     
             input_files.append("tmp/{}/DADA2_AS/filtered/{}_F_filtered.fastq".format(library_id, tag_id))
             input_files.append("tmp/{}/DADA2_AS/filtered/{}_R_filtered.fastq".format(library_id, tag_id))
@@ -95,7 +101,9 @@ for library_root in libraries:
             input_files.append("tmp/{}/DADA2_SS/filtered/{}_R_filtered.fastq".format(library_id, tag_id))
     
             output_files = []
-            tag_id, fseq, rseq = line.split()
+            tag_id, fseq, rseq = line.split("\t")
+            if len(tag_id) == 0: #avoid reading empty lines inside the tags file 
+              continue
             
             output_files.append("tmp/{}/DADA2_AS/filtered/matched/{}_F_matched.fastq.gz".format(library_id, tag_id))
             output_files.append("tmp/{}/DADA2_AS/filtered/matched/{}_R_matched.fastq.gz".format(library_id, tag_id))
@@ -155,8 +163,10 @@ for library_root in libraries:
     input_files = []
     with open(os.path.join(library_root, "tags.txt")) as tags_file:
         for line in tags_file:
-            tag_id, fseq, rseq = line.split()
-
+            tag_id, fseq, rseq = line.split("\t")
+            if len(tag_id) == 0: #avoid reading empty lines inside the tags file 
+              continue
+        
             input_files.append("tmp/{}/DADA2_AS/filtered/matched/{}_F_matched.fastq.gz".format(library_id, tag_id))
             input_files.append("tmp/{}/DADA2_AS/filtered/matched/{}_R_matched.fastq.gz".format(library_id, tag_id))
             input_files.append("tmp/{}/DADA2_SS/filtered/matched/{}_F_matched.fastq.gz".format(library_id, tag_id))
@@ -263,7 +273,7 @@ def blaster(k, outFolder):
     options = {
         'cores': 2,
         'memory': '32g',
-        'walltime': '4:00:00'
+        'walltime': '12:00:00'
     }
     spec = '''
     export BLASTDB=/faststorage/project/eDNA/blastdb/Eukaryota_COI/BLAST_db/
