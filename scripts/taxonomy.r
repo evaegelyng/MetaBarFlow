@@ -16,7 +16,7 @@ library(dplyr)
 library(tidyr)
 
 # Provide API key for NCBI
-options(ENTREZ_KEY="d48b9acccd829282ff4386f716341ed2f608") 
+options(ENTREZ_KEY="YOUR_KEY")
 
 # Read the completed blast results into a table
 IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
@@ -42,7 +42,8 @@ names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qs
 IDtable <- IDtable %>% mutate(species_level=if_else(sapply(strsplit(as.character(IDtable$ssciname)," "), length)==2, "yes","no"))
 IDtable <- IDtable[IDtable$species_level=="yes",]
 
-# The following is to define for each query sequence an "upper margin" (threshold) of sequence similarity, which will determine whether a BLAST hit will be taken into account in the taxonomic classification of the query
+# The following is to define for each query sequence a minimum threshold of sequence similarity, which will determine whether a BLAST hit will be taken into account in the taxonomic classification of the query
+# In the summary object below, the values needed to determine this threshold are calculated
 
 # First, determine maximum and minimum similarity (pident) for each qseqid+taxid combination. Scientific names are unique for each taxid, and can thus also be included in the table.
 summary<-do.call(data.frame,aggregate(pident~qseqid+staxid+ssciname,data=IDtable,FUN = function(x) c(max = max(x), min = min(x),n = length(x))))
@@ -156,8 +157,8 @@ prefilter <- function(IDtable, lower_margin=2, remove = c("uncultured", "environ
       if (nrow(test2) > 1) {test <- test2}
     }
     max <- max(test$pident)
-    upper <- as.numeric(test$pident.min.best[1])
-    lower <- max-lower_margin
+    upper <- as.numeric(test$pident.min.best[1]) # Eva set the minimum similarity threshold for including a hit to the minimum similarity of the best matching taxid
+    lower <- max-as.numeric(lower_margin)
     test <- test[which(test$pident >= lower),] # select all lines for a query
     test$margin <- "lower"
     test[test$pident >= upper,"margin"] <- "upper"
@@ -280,11 +281,83 @@ evaluate_classification <- function(classified) {
 # Classify your OTUs by running the wrapper (functionX) "assign_taxonomy" like this. Consider whether it makes sense to remove specific hits or taxa from the evaluation (see explanation below):
 my_classified_result <- assign_taxonomy(IDtable, lower_margin = 2, remove = c("uncultured", "environmental")) # Eva removed constant upper_margin specification
 
+tax_table <- my_classified_result$classified_table 
+
+write.table(tax_table, paste(args[3],".backup",sep=""), sep = "\t", quote = F, row.names = F)
+
+# Determine a "final" taxonomic ID, using scores combined with a minimum similarity threshold of 98% for species level id
+tax_table <- read.table(paste(args[3],".backup",sep=""),sep="\t",header=TRUE)
+
+score.id = c()
+for(i in tax_table$qseqid){
+  vec=c(tax_table[tax_table$qseqid==i,]$species_score==100 & tax_table[tax_table$qseqid==i,]$pident>=98,
+  tax_table[tax_table$qseqid==i,]$genus_score==100 & (tax_table[tax_table$qseqid==i,]$pident<98 | tax_table[tax_table$qseqid==i,]$species_score<100),
+  tax_table[tax_table$qseqid==i,]$family_score==100 & tax_table[tax_table$qseqid==i,]$genus_score<100,
+  tax_table[tax_table$qseqid==i,]$order_score==100 & tax_table[tax_table$qseqid==i,]$family_score<100,
+  tax_table[tax_table$qseqid==i,]$order_score<100 & tax_table[tax_table$qseqid==i,]$class_score==100,
+  tax_table[tax_table$qseqid==i,]$class_score<100 & tax_table[tax_table$qseqid==i,]$phylum_score==100)
+
+  # If the species score is 100 and the sequence similarity above 98%, final ID will be to species level
+  # If a species level ID cannot be made, but the genus score is 100, final ID will be to genus level
+  # If a genus level ID cannot be made, but the family score is 100, final ID will be to family level
+  # If a family level ID cannot be made, but the order score is 100, final ID will be to order level
+  # If an order level ID cannot be made, but the class score is 100, final ID will be to class level
+  # If a class level ID cannot be made, but the phylum score is 100, final ID will be to phylum level
+
+  condition_num = which(vec)[1]
+  columns = c("species","genus","family","order","class","phylum")
+
+  if(is.na(condition_num))
+    score.id = c(score.id, "NA")
+  else if(condition_num==1)
+    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$species)[1])
+  else if(condition_num==2)
+    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$genus)[1])
+  else if(condition_num==3)
+    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$family)[1])
+  else if(condition_num==4)
+    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$order)[1])
+  else if(condition_num==5)
+    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$class)[1])
+  else
+    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$phylum)[1])
+}
+
+tax_table$score.id <- score.id
+
+# Get WORMS IDs and search the WORMS database for synonyms
+
+#detach("package:taxizedb", unload=TRUE)
+#library(taxize) # For retrieving synonyms
+
+#tax_table$nwords <- sapply(strsplit(as.character(tax_table$species), " "), length)
+#tax_table$synonyms<-"NA" 
+#tax_table$valid_name<-"NA"
+
+#for (i in tax_table$qseqid){
+#
+#   if (tax_table[tax_table$qseqid==i,]$nwords==2 & tax_table[tax_table$qseqid==i,]$pident>=0.98){
+#       
+#       worms_id<-get_wormsid(tax_table[tax_table$qseqid==i,]$species)
+#
+#       syns<-synonyms(as.character(worms_id[1]),db="worms")
+#       
+#       if (dim(syns[[as.character(worms_id[1])]])>0) {
+#       
+#                                                       syns_vec<-syns[[as.character(worms_id[1])]]['scientificname']
+#
+#                                                       tax_table[tax_table$qseqid==i,]$synonyms<-paste(unlist(syns_vec), collapse = ', ')
+#                                                       
+#                                                       tax_table[tax_table$qseqid==i,]$valid_name<-syns[[as.character(worms_id[1])]][['valid_name']][1]
+#                                                       }
+#       }
+#}
+
 #Write the result to a table
-write.table(my_classified_result$classified_table, args[3], sep = "\t", quote = F, row.names = F)
+write.table(tax_table, args[3], sep = "\t", quote = F, row.names = F)
 
 # Explanation to input
-#   INPUT.blasthits is the blast-results
+#   the input is the blast-results
 #   upper_margin is the margin used for suboptimal hits used for classification - e.g. a margin of 0.5 means that hits of 100% to 99.5% is used og 95% to 94.5%, if the best hit is 100% or 95% respectively.
 #   lower_margin: hits down to this margin from the best hit are shown in the output as alternative possibilities, but not used for taxonomic evaluation.
 #   remove: a vector of taxa to exclude from the evaluation. Could be e.g. remove = c("uncultured","environmental") to exclude hits with no precise annotation, or names of species known not to be in the study area.

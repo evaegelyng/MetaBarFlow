@@ -166,7 +166,7 @@ for library_root in libraries:
             tag_id, fseq, rseq = line.split("\t")
             if len(tag_id) == 0: #avoid reading empty lines inside the tags file 
               continue
-        
+                      
             input_files.append("tmp/{}/DADA2_AS/filtered/matched/{}_F_matched.fastq.gz".format(library_id, tag_id))
             input_files.append("tmp/{}/DADA2_AS/filtered/matched/{}_R_matched.fastq.gz".format(library_id, tag_id))
             input_files.append("tmp/{}/DADA2_SS/filtered/matched/{}_F_matched.fastq.gz".format(library_id, tag_id))
