@@ -64,11 +64,11 @@ or
 
 or if you have many libraries, run the following for the entire raw data folder
 
-  'for i in `find . -name "*.gz"`; do gunzip $i; done &'  
+  `for i in `find . -name "*.gz"`; do gunzip $i; done &`  
 
 #### Use the software fastqc (base environment) to further inspect the quality of the data:
 
-  'sbatch --account eDNA YOUR_PATH/scripts/fastqc.sh'
+  `sbatch --account eDNA YOUR_PATH/scripts/fastqc.sh`
    
 #### In each library data folder, make a tab separated file named tags.txt containing the sample names and corresponding forward and reverse tag sequences (see an example in data folder of this repository). Remember to put the library number/PCR replicate number at the end of each sample name (e.g. "SAMPLE1_1" for library 1, "SAMPLE1_2" for library 2 and so on. Check that none of the sample names themselves contain these endings, e.g. "SAMPLE_1"). This way, PCR replicates will be kept separate when the data from the different libraries are merged. You can start by making the file for library 1 in excel, transfer to the server, change from Windows to UNIX format (important!) and then use this file as a template for the remaining libraries (just replace replicate number in the sample names). 
 
