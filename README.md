@@ -64,7 +64,7 @@ or
 
 or if you have many libraries, run the following for the entire raw data folder
 
-  `for i in `find . -name "*.gz"`; do gunzip $i; done &`  
+  ``for i in `find . -name "*.gz"`; do gunzip $i; done &``  
 
 #### Use the software fastqc (base environment) to further inspect the quality of the data:
 
