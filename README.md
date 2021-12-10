@@ -6,7 +6,7 @@
 
 #### Copy the scripts folder from the Github repository to the backup folder. 
 
-#### Put the workflow.py file in the main directory, and the conda environment description in the backup folder
+#### Put the appropriate workflow file (for COI data: workflow_bold_nt.py - otherwise workflow.py) in the main directory, and the conda environment description in the backup folder
 
 #### In the backup folder, add a readme file with explanations about the project. Ideally, put an appropriate readme file in the scripts and data folders as well
 
@@ -82,7 +82,7 @@ or if you have many libraries, run the following for the entire raw data folder
   
   `conda activate YOUR_ENV`
   
-#### Run gwf workflow from main folder
+#### Run gwf workflow from main folder (if using workflow_bold_nt.py, you need to specify this filename after the command)
 
   `gwf run`
 
