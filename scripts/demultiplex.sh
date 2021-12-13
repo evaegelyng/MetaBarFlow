@@ -4,6 +4,7 @@ OUTDIR=$2
 TAG_NAME=$3
 TAG_SEQ=$4
 RTAG_SEQ=$5
+BATCHFILE=$6
 
 mkdir -p $OUTDIR/DADA2_AS
 mkdir -p $OUTDIR/DADA2_SS
@@ -54,4 +55,4 @@ FINAL_FASTQ="$OUTDIR/DADA2_AS/${TAG_NAME}_R1.fastq"
     ${CUTADAPT} -g "${RTRP}" -e 0 -O "${#RTRP}" - | \
     ${CUTADAPT2} -a "${REV_PRIMER_F}" - > "${FINAL_FASTQ}"
 
-done < $INDIR/batchfileDADA2.list
+done < $INDIR/$BATCHFILE
