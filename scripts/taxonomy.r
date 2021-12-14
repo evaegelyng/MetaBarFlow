@@ -2,9 +2,37 @@
 args = commandArgs(trailingOnly=TRUE)
 ######################################################################################################################################################
 
-# Run the taxonomy analysis of your metabarcoding data, after running it through DADA2 and BLASTN:
+# Taxonomical classification of OTUs
 
 ######################################################################################################################################################
+#
+# Authors: This script was mainly written by Tobias G. Frøslev (see https://github.com/tobiasgf/Bioinformatic-tools/tree/master/Eva_Sigsgaard_2018). 
+# It has here been modified by Eva Egelyng Sigsgaard such that instead of a fixed threshold ("upper margin") determining which BLAST hits to include for classification, this threshold
+# is determined for each query sequence as the minimum similarity obtained for the best matching taxid. Adrián Gómez has added the correction of outdated taxids that are no longer valid, 
+# as they have been merged with other taxids.
+
+# The script requires a BLAST output from a set of OTUs
+# Minimum number of fields required are qseqid, staxid, pident, ssciname and evalue
+
+# Instructions
+# 1) Load the three functions below: assign_taxonomy, prefilter, get_classification, evaluate_classification
+# 2) Classify your OTUs by running the wrapper function assign_taxonomy like this:
+#   classified_table <- assign_taxonomy(INPUT.blasthits, lower_margin = 2, remove = c("unwanted_taxon1","unwanted_taxon2"))
+#
+# Explanation to input
+#   INPUT.blasthits is the blast-results
+#   upper_margin is the margin used for suboptimal hits used for classification - e.g. a margin of 0.5 means that hits of 100% to 99.5% is used og 95% to 94.5%, if the best hit is 100% or 95% respectively.
+#   lower_margin: hits down to this margin from the best hit are shown in the output as alternative possibilities, but not used for taxonomic evaluation.
+#   remove: a vector of taxa to exclude from the evaluation. Could be e.g. remove = c("uncultured","environmental") to exclude hits with no precise annotation, or names of species known not to be in the study area.
+#
+# Explanation to output
+#   the output is a list with
+#   $classified_table : the table with all OTUs classified. One row per OTU
+#        this table contains the estimated best classification at all taxonomic levels, based on a weighted score (of the evalue) of the hits in the upper_margin, 
+#        each taxonomic level gets a score indicating the agreement on the selected classification at that level..
+#        also a string of alternatives and their matches (%) this string includes hits from both upper and lower margin
+#   $all_classifications: this is the table used to make the classified_table. It contains all hits above lower_magrin for all OTUs and their classifications (only upper_margin).
+#   ...and the input parameters
 
 print(args[1])
 print(args[2])
@@ -355,18 +383,3 @@ tax_table$score.id <- score.id
 
 #Write the result to a table
 write.table(tax_table, args[3], sep = "\t", quote = F, row.names = F)
-
-# Explanation to input
-#   the input is the blast-results
-#   upper_margin is the margin used for suboptimal hits used for classification - e.g. a margin of 0.5 means that hits of 100% to 99.5% is used og 95% to 94.5%, if the best hit is 100% or 95% respectively.
-#   lower_margin: hits down to this margin from the best hit are shown in the output as alternative possibilities, but not used for taxonomic evaluation.
-#   remove: a vector of taxa to exclude from the evaluation. Could be e.g. remove = c("uncultured","environmental") to exclude hits with no precise annotation, or names of species known not to be in the study area.
-#
-# Explanation to output
-#   the output is a list with
-#   $classified_table : the table with all OTUs classified. One row per OTU
-#        this table contains the estimated best classification at all taxonomic levels, based on a weighted score (of the evalue) of the hits in the upper_margin, 
-#        each taxonomic level gets a score indicating the agreement on the selected classification at that level..
-#        also a string of alternatives and their matches (%) this string includes hits from both upper and lower margin
-#   $all_classifications: this is the table used to make the classified_table. It contains all hits above lower_magrin for all OTUs and their classifications (only upper_margin).
-#   ...and the input parameters
