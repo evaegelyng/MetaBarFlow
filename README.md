@@ -68,7 +68,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
   db_download_ncbi()
 ```
 
-#### In the root data folder, download the raw sequencing data using wget and the csv file from Novogene ("Export link" on the data website):
+#### In the root data folder, download the raw sequencing data. If sequencing was done by Novogene, use can use wget with the provided csv file ("Export link" on the data website):
 
   `wget -c --progress=dot:giga --timeout=120 --waitretry=60 --tries=10000 --retry-connrefused -i YOUR_CSV.csv`
  
