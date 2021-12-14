@@ -108,7 +108,22 @@ or if you have many libraries, run the following for the entire raw data folder
 
 #### The script create_batch.sh can be used to make a file (batchfileDADA2.list) in each library data folder containing the fastq file names, the primer sequences, and the minimum length required for a read (unaligned, i.e. forward or reverse read) after trimming of primers and tags. Replace the primer sequences and length specified in the script with those appropriate for your own project. If your primers contain inosine bases ("I"), these need to be replaced with "N", as the software does not recognize "I". 
 
-#### If appropriate, change the minimum length requirement in the match_pairs.r script. Check whether it would be appropriate to change any of the options set for the blastn command. In the taxonomy.r script, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Also consider whether the upper and lower margins should be adjusted (see explanation in the script).    
+#### If appropriate, change the minimum length requirement in the match_pairs.r script. Check whether it would be appropriate to change any of the options set for the blastn command. A widely used blast database is the NCBI GenBank "nt" database, which can be downloaded accordingly (inside a fitting directory, and with a stable internet connection):
+
+`update_blastdb.pl nt --timeout 500`
+
+#### Update taxonomy for blast folder
+
+```
+update_blastdb.pl taxdb
+tar -zvxf taxdb.tar.gz
+```
+
+#### For all "nt.XX.tar.gz" files, run the following:
+
+`tar -zvxf nt.XX.tar.gz`
+
+#### In the taxonomy.r script, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Also consider whether the upper and lower margins should be adjusted (see explanation in the script).    
 
 #### In the workflow file, replace the project name and the path to the raw data with your own. If appropriate, change the length and quality requirements provided to the sickle command. 
 
