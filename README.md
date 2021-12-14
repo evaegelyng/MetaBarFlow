@@ -176,6 +176,7 @@ tar -zvxf taxdb.tar.gz
 ### Citations and Acknowledgements
 
 #### Andrews, S. (2010). FastQC:  A Quality Control Tool for High Throughput Sequence Data [Online]. Available online at: http://www.bioinformatics.babraham.ac.uk/projects/fastqc/
+#### Callahan, B., McMurdie, P., Rosen, M. et al. DADA2: High-resolution sample inference from Illumina amplicon data. Nat Methods 13, 581–583 (2016). https://doi.org/10.1038/nmeth.3869
 
 #### The R scripts and the script demultiplex.sh were originally written by Tobias G. Frøslev. Modifications are indicated in the scripts.
 
