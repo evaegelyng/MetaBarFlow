@@ -1,3 +1,6 @@
+# Authors: This script is a modified version of the script DADA2_demultiplex_tail_trim.sh, which was mainly written by Tobias G. Frøslev (see Frøslev et al. 2017). 
+# It has here been modified by Eva Egelyng Sigsgaard to be run with the gwf workflow, such that each sample (each line in tags.txt) is run separately, for faster computation.
+
 INDIR=$1
 OUTDIR=$2
 
