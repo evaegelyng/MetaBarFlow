@@ -1,4 +1,14 @@
 # Author: This script is based on the script C_Processing_with_DADA2.Rmd by Tobias G. Frøslev (see Frøslev et al. 2017).
+# The script filters reads, so that among other things, only reads with a matching paired read are retained.
+# It has been modified by Eva, so both the forward and reverse files are now checked for empty files, and in case either or both files are empty, 
+# the file sizes of each are printed
+
+# Remember to check whether you would like to change any of the options of the function fastqPairedFilter. 
+# See option descriptions from https://rdrr.io/bioc/dada2/man/fastqPairedFilter.html below:
+# minLen: (Optional). Default 20. Remove reads with length less than minLen. minLen is enforced after all other trimming and truncation.
+# maxN: (Optional). Default 0. After truncation, sequences with more than maxN Ns will be discarded. Note that dada currently does not allow Ns.
+# maxEE: (Optional). Default Inf (no EE filtering). After truncation, reads with higher than maxEE "expected errors" will be discarded. Expected errors are calculated from the nominal definition of the quality score: EE = sum(10^(-Q/10))
+# truncQ:(Optional). Default 2. Truncate reads at the first instance of a quality score less than or equal to truncQ.
 
 args = commandArgs(trailingOnly=TRUE)
 
