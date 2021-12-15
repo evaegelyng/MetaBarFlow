@@ -1,5 +1,5 @@
 # Merging the resulting tables of the "sense" and the "antisense" analyses
-# Authors: Tobias G. Frøslev. The function sumSequenceTables is a modified version of mergeSequenceTables, and was provided by Benjamin Callahan (see https://github.com/benjjneb/dada2/issues/132)
+# Authors: This script is based on the script C_Processing_with_DADA2.Rmd by Tobias G. Frøslev (see Frøslev et al. 2017). The function sumSequenceTables is a modified version of mergeSequenceTables, and was provided by Benjamin Callahan (see https://github.com/benjjneb/dada2/issues/132)
 
 args = commandArgs(trailingOnly=TRUE)
 
