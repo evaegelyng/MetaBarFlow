@@ -66,10 +66,6 @@ names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qs
       stop("Query coverage is less than 100% for all hits", call.=FALSE)
     }
 
-# Remove hits that are (definitely) not identified to species level
-IDtable <- IDtable %>% mutate(species_level=if_else(sapply(strsplit(as.character(IDtable$ssciname)," "), length)==2, "yes","no"))
-IDtable <- IDtable[IDtable$species_level=="yes",]
-
 # The following is to define for each query sequence a minimum threshold of sequence similarity, which will determine whether a BLAST hit will be taken into account in the taxonomic classification of the query
 # In the summary object below, the values needed to determine this threshold are calculated
 
