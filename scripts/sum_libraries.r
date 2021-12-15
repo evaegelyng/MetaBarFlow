@@ -1,3 +1,7 @@
+# Merging the sequence tables of all the sequencing libraries, and extracting sequences sample-wise
+# Authors: This script is based on the script C_Processing_with_DADA2.Rmd by Tobias G. Frøslev. The function sumSequenceTables is a modified version of mergeSequenceTables, and was provided by Benjamin Callahan (see https://github.com/benjjneb/dada2/issues/132)
+# Eva Egelyng Sigsgaard has modified the script so the sequencing tables from all libraries are merged before extracting sequences, and so the script can be run with the gwf workflow. 
+
 args = commandArgs(trailingOnly=TRUE)
 
 #Define a function for combining two or more tables, collapsing samples with similar names:  
