@@ -1,3 +1,6 @@
+# Merging the resulting tables of the "sense" and the "antisense" analyses
+# Authors: Tobias G. Frøslev. The function sumSequenceTables is a modified version of mergeSequenceTables, and was provided by Benjamin Callahan (see https://github.com/benjjneb/dada2/issues/132)
+
 args = commandArgs(trailingOnly=TRUE)
 
 #Define a function for combining two or more sequence tables:  
