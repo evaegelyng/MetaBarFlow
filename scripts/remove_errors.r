@@ -1,3 +1,5 @@
+# Authors: This script is based on the script C_Processing_with_DADA2.Rmd by Tobias G. Frøslev (see Frøslev et al. 2017).
+
 args = commandArgs(trailingOnly=TRUE)
 
 library(dada2)
