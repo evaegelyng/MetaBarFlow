@@ -179,6 +179,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 #### Callahan, B., McMurdie, P., Rosen, M. et al. DADA2: High-resolution sample inference from Illumina amplicon data. Nat Methods 13, 581–583 (2016). https://doi.org/10.1038/nmeth.3869
 #### Frøslev, T. G., Kjøller, R., Bruun, H. H., Ejrnæs, R., Brunbjerg, A. K., Pietroni, C., & Hansen, A. J. (2017). Algorithm for post-clustering curation of DNA amplicon data yields reliable biodiversity estimates. Nature Communications, 8(1), 1188.
 
+#### This pipeline was developed in the eDNA research group (PI: Philip Francis Thomsen) at the Department of Biology, Aarhus University.
 #### The R scripts and the script demultiplex.sh were mainly written by Tobias G. Frøslev. Modifications are indicated in the scripts.
 
 ### Questions
