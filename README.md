@@ -173,19 +173,22 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
   devtools::install_github("ropensci/taxizedb")
 ```
 
-### Citations and Acknowledgements
-
-#### Andrews, S. (2010). FastQC:  A Quality Control Tool for High Throughput Sequence Data [Online]. Available online at: http://www.bioinformatics.babraham.ac.uk/projects/fastqc/
-#### Callahan, B., McMurdie, P., Rosen, M. et al. DADA2: High-resolution sample inference from Illumina amplicon data. Nat Methods 13, 581–583 (2016). https://doi.org/10.1038/nmeth.3869
-#### Frøslev, T. G., Kjøller, R., Bruun, H. H., Ejrnæs, R., Brunbjerg, A. K., Pietroni, C., & Hansen, A. J. (2017). Algorithm for post-clustering curation of DNA amplicon data yields reliable biodiversity estimates. Nature Communications, 8(1), 1188.
-
-#### This pipeline was developed in the eDNA research group (PI: Philip Francis Thomsen) at the Department of Biology, Aarhus University.
-#### The R scripts and the script demultiplex.sh were mainly written by Tobias G. Frøslev. Modifications are indicated in the scripts.
-
-### Questions
-
-#### If there are any questions or issues, please email Eva Egelyng Sigsgaard (eva.sigsgaard@bio.au.dk) or Mads R. Jensen (mrj@bio.au.dk), or alternatively leave a comment on this repository.
-
 ### Suggested Citation
 
 #### Please link to this GitHub repository and refer to the publication: Jensen et al. Short-term temporal variation of coastal marine eDNA. Environmental DNA XX (2022).
+
+### Acknowledgements
+
+#### This pipeline was developed in the eDNA research group (PI: Philip Francis Thomsen) at the Department of Biology, Aarhus University. The scripts called by the gwf workflow were mainly written by Tobias G. Frøslev (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to Dan Søndergaard for help getting started with the gwf workflow tool, and a special mention to Samuele Soraggi for assistance with Python scripting and troubleshooting. Thanks to Adrián Gómez Repolles (AGR) for solving the issue of outdated taxids in the taxonomical classification. The use of overlaps in sequence similarity between taxa matching query sequences, was suggested by Philip Francis Thomsen, and was first presented in Sigsgaard et al. (2020). Further details on script authorship and modifications are presented inside the scripts.
+
+### Citations (please see Jensen et al. for references to all software packages)
+
+#### Callahan, B. J., McMurdie, P. J., Rosen, M. J., Han, A. W., Johnson, A. J. A., & Holmes, S. P. (2016). DADA2: high-resolution sample inference from Illumina amplicon data. Nature methods, 13(7), 581-583.
+
+#### Frøslev, T. G., Kjøller, R., Bruun, H. H., Ejrnæs, R., Brunbjerg, A. K., Pietroni, C., & Hansen, A. J. (2017). Algorithm for post-clustering curation of DNA amplicon data yields reliable biodiversity estimates. Nature Communications, 8(1), 1188.
+
+#### Sigsgaard, E. E., Olsen, K., Hansen, M. D., Hansen, O. L. P., Høye, T. T., Svenning, J. C., & Thomsen, P. F. (2021). Environmental DNA metabarcoding of cow dung reveals taxonomic and functional diversity of invertebrate assemblages. Molecular ecology, 30(13), 3374-3389.
+
+### Questions
+
+#### If you have questions or issues, please email Eva Egelyng Sigsgaard (eva.sigsgaard@bio.au.dk) or Mads R. Jensen (mrj@bio.au.dk), or leave a comment on this repository.
