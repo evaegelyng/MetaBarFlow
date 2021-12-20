@@ -177,7 +177,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 #### This pipeline was developed in the eDNA research group at the Department of Biology, Aarhus University, by:
 
-#### [Eva Egelyng Sigsgaard](https://github.com/evaegelyng): Lead developer since 2019
+#### [Eva Egelyng Sigsgaard](https://github.com/evaegelyng): Lead developer and maintainer since 2019
 
 #### Philip Francis Thomsen (Principal Investigator): Scientific input, especially on taxonomic classification
 
