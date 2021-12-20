@@ -1,4 +1,4 @@
-### This workflow allows efficient parallel processing of fastq files from Illumina sequencing of metabarcoding libraries. I.e. sequencing libraries built on pools of amplicons from complex samples (e.g. eDNA samples or bulk samples with DNA from several taxa), which have each been PCR-amplified using a unique combination of oligonucleotide tags on the primers. The workflow operates with amplicon sequence variants (ASVs) throughout, i.e. sequences are not collapsed into OTUs. The workflow includes demultiplexing, quality and error filtering, BLAST searching against a local sequence database, and taxonomic classification of the ASVs based on the BLAST hits. The main outputs are an ASV table (which ASVs are found in which samples) and the taxonomic classification of these ASVs. Enjoy!
+### This workflow allows efficient parallel processing of fastq files from Illumina sequencing of metabarcoding libraries. I.e. sequencing libraries built on pools of amplicons from complex samples (e.g. eDNA samples or bulk samples with DNA from several taxa), which have each been PCR-amplified using a unique combination of oligonucleotide tags on the primers. The workflow operates with amplicon sequence variants (ASVs) throughout, i.e. sequences are not collapsed into OTUs. The workflow includes demultiplexing, quality and error filtering, BLAST searching against a local sequence database, and taxonomic classification of the ASVs based on the BLAST hits. The main outputs are an ASV table (which ASVs are found in which samples) and a taxonomic classification of these ASVs. Importantly, these classifications always need to be checked carefully and manually, using general knowledge of taxonomy, local species occurrences, synonyms etc., in order to produce a more realistic final list of taxa. Enjoy!
 
 #### Make overall directories
 
@@ -50,7 +50,7 @@
   db_download_ncbi()
 ```
 
-#### In the root data folder, download the raw sequencing data. If sequencing was done by Novogene, use can use wget with the provided csv file ("Export link" on the data website):
+#### In the root data folder, download the raw sequencing data. If you have been provided with a csv file with links to the files you can run the following command to download all files at once:
 
   `wget -c --progress=dot:giga --timeout=120 --waitretry=60 --tries=10000 --retry-connrefused -i YOUR_CSV.csv`
  
@@ -179,7 +179,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 ### Acknowledgements
 
-#### This pipeline was developed in the eDNA research group (PI: Philip Francis Thomsen) at the Department of Biology, Aarhus University. The scripts called by the gwf workflow were mainly written by Tobias G. Frøslev (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to Dan Søndergaard (https://github.com/dansondergaard) for help getting started with the gwf workflow tool (https://docs.gwf.app/), and a special mention to Samuele Soraggi (https://github.com/SamueleSoraggi) for assistance with Python scripting and troubleshooting. Thanks to Adrián Gómez Repollés (https://github.com/adriangeerre) for solving the issue of outdated taxids in the taxonomical classification. The use of overlaps in sequence similarity between taxa matching query sequences, was suggested by Philip Francis Thomsen, and was first presented in Sigsgaard et al. (2020). Further details on script authorship and modifications are presented inside the scripts.
+#### This pipeline was developed in the eDNA research group (PI: Philip Francis Thomsen) at the Department of Biology, Aarhus University. The scripts called by the gwf workflow were mainly written by Tobias G. Frøslev (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to Dan Søndergaard (https://github.com/dansondergaard) for help getting started with the gwf workflow tool (https://docs.gwf.app/), and a special mention to Samuele Soraggi (https://github.com/SamueleSoraggi) for assistance with Python scripting and troubleshooting. Thanks to Adrián Gómez Repollés (https://github.com/adriangeerre) for solving the issue of outdated taxids in the taxonomical classification. The use of overlaps in sequence similarity between taxa matching query sequences, was suggested by Philip Francis Thomsen, and was first presented in Sigsgaard et al. (2020). Further details on script authorship and modifications are presented inside the scripts. We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
 
 ### Citations (please see Jensen et al. for references to all software packages)
 
@@ -187,7 +187,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 #### Frøslev, T. G., Kjøller, R., Bruun, H. H., Ejrnæs, R., Brunbjerg, A. K., Pietroni, C., & Hansen, A. J. (2017). Algorithm for post-clustering curation of DNA amplicon data yields reliable biodiversity estimates. Nature Communications, 8(1), 1188.
 
-#### Sigsgaard, E. E., Olsen, K., Hansen, M. D., Hansen, O. L. P., Høye, T. T., Svenning, J. C., & Thomsen, P. F. (2021). Environmental DNA metabarcoding of cow dung reveals taxonomic and functional diversity of invertebrate assemblages. Molecular ecology, 30(13), 3374-3389.
+#### Sigsgaard, E. E., Olsen, K., Hansen, M. D., Hansen, O. L. P., Høye, T. T., Svenning, J. C., & Thomsen, P. F. (2020). Environmental DNA metabarcoding of cow dung reveals taxonomic and functional diversity of invertebrate assemblages. Molecular ecology, 30(13), 3374-3389.
 
 ### Questions
 
