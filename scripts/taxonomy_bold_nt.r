@@ -370,7 +370,8 @@ for(i in tax_table$qseqid){
 
 tax_table$score.id <- score.id
 
-# Get WORMS IDs and search the WORMS database for synonyms
+# In development (may be implemented officially in a future version of the pipeline):      
+# Get World Register of Marine Species (WoRMS) IDs and search the WoRMS database for synonyms
 
 #detach("package:taxizedb", unload=TRUE)
 #library(taxize) # For retrieving synonyms
