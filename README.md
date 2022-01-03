@@ -145,7 +145,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
  `gwf status demultiplex*` 
 
-#### As the function splitting your fasta file of OTUs before BLASTing may output a smaller number of files than the 99 files specified (it seems the software has certain thresholds for the number of sequences that can go in each file), double-check in the .stderr log file that the number of sequences of the separate files add up to the total sequence number. Note that a hidden folder named ".gwf/logs" is where you will find your log files.
+#### As the function splitting your fasta file of OTUs before BLAST searching may output a smaller number of files than the 99 files specified (it seems the software has certain thresholds for the number of sequences that can go in each file), double-check in the .stderr log file that the number of sequences of the separate files add up to the total sequence number. Note that a hidden folder named ".gwf/logs" is where you will find your log files.
 
 #### Increase no. of cores, memory requirements and/or time limits if needed, or decrease if you need less resources. You can check your realized resource use for a target using the package gwf-utilization:
 
