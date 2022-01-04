@@ -305,10 +305,8 @@ def taxonomy(taxonomyFolder, blastFolder, k):
       Rscript scripts/taxonomy_bold_nt.r {inputFile} {summaryFile} {outputFile}
     else
       touch {outputFile}
+      touch {summaryFile}
     fi
-    if grep -q "Query coverage is less than 100% for all hits" ".gwf/logs/taxonomy_" + str(k) + ".stdout"
-    then
-      touch {outputFile}
     '''.format(taxonomyFolder=taxonomyFolder, inputFile=inputFile, summaryFile=summaryFile, outputFile=outputFile) 
     return inputs, outputs, options, spec
 
