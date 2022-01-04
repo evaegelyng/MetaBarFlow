@@ -80,6 +80,7 @@ names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qs
       IDtable <- IDtable[IDtable$qcovs>=97,]  
     } else {
       readr::write_file("", args[2])
+      readr::write_file("", args[3])
       stop("Query coverage is less than 97% for all hits", call.=FALSE)
     }
 
