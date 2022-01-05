@@ -53,7 +53,7 @@ IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 IDtable$V16<-"NA"
 
 # Read the possible problematic TaxIDs as a table
-MergedTaxIDs<-read.table("~/eDNA/faststorage/blastdb/nt-old-30032020/taxdump/MergedTaxIDs", header=TRUE)
+MergedTaxIDs<-read.table("YOUR_PATH/MergedTaxIDs", header=TRUE)
 
 # Add header information
 names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","staxid","ssciname")
