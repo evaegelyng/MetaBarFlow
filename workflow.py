@@ -47,8 +47,6 @@ for library_root in libraries:
         for line in tags_file:
             input_files = []
             tag_id, fseq, rseq = line.split("\t")
-            if len(tag_id) == 0: #avoid reading empty lines inside the tags file 
-              continue
             
             input_files.append("tmp/{}/DADA2_AS/{}_R1.fastq".format(library_id, tag_id))
             input_files.append("tmp/{}/DADA2_AS/{}_R2.fastq".format(library_id, tag_id))
@@ -98,8 +96,6 @@ for library_root in libraries:
     
             output_files = []
             tag_id, fseq, rseq = line.split("\t")
-            if len(tag_id) == 0: #avoid reading empty lines inside the tags file 
-              continue
             
             output_files.append("tmp/{}/DADA2_AS/filtered/matched/{}_F_matched.fastq.gz".format(library_id, tag_id))
             output_files.append("tmp/{}/DADA2_AS/filtered/matched/{}_R_matched.fastq.gz".format(library_id, tag_id))
