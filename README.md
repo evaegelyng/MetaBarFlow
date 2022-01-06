@@ -26,7 +26,7 @@
  
 #### Create a conda environment based on the description file
 
-`conda env create --name projectname -f environment.yml`
+`conda env create --name projectname -f metabarflow_XXXXXX.yml`
   
 #### In Jensen et al., the package taxizedb was installed with devtools, as it was not yet on conda. If you want to reproduce exactly the pipeline in Jensen et al., see footnote for installation details. Otherwise, load your conda environment, and install the package taxizedb:
 
@@ -78,13 +78,9 @@ or if you have many libraries, run the following for the entire raw data folder
 
   ``for i in `find . -name "*.gz"`; do gunzip $i; done &``  
 
-#### Use the software fastqc to further inspect the quality of the data. If you do not have it in your base environment, install to your project environment:
+#### Use the software fastqc to further inspect the quality of the raw data:
 
-```
-  mamba install -c bioconda fastqc 
-  
-  sbatch YOUR_PATH/scripts/fastqc.sh
-```
+ `sbatch YOUR_PATH/scripts/fastqc.sh`
    
 #### In each library data folder, make a tab separated file named tags.txt containing the sample names and corresponding forward and reverse tag sequences (see an example in data folder of this repository). Remember to put the library number/PCR replicate number at the end of each sample name (e.g. "SAMPLE1_1" for library 1, "SAMPLE1_2" for library 2 and so on. Check that none of the sample names themselves contain these endings, e.g. "SAMPLE_1"). This way, PCR replicates will be kept separate when the data from the different libraries are merged. You can start by making the file for library 1 in excel, transfer to the server, and then use this file as a template for the remaining libraries (just replace replicate number in the sample names). Note that these txt-files should be in UNIX format (not Windows - can be checked e.g. using notepad++). In some cases, it is also necessary to add an empty line at the end of each tags file, and to remove the tab separator ("\t") in all instances of "line.split("\t")" in the workflow.
 
