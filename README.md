@@ -28,14 +28,6 @@
 
 `conda env create --name projectname -f metabarflow_XXXXXX.yml`
   
-#### In Jensen et al., the package taxizedb was installed with devtools, as it was not yet on conda. If you want to reproduce exactly the pipeline in Jensen et al., see footnote for installation details. Otherwise, load your conda environment, and install the package taxizedb:
-
-```  
-  conda activate projectname
-  
-  conda install -c conda-forge r-taxizedb
-```
-
 #### If you cannot create the environment based on the description file (updated packages may cause problems), create your own environment, beginning with the packages that are directly called in the scripts (cutadapt, sickle, taxizedb etc.). It can be helpful to use mamba to install packages, as it is faster than conda.
 
    `conda install -c conda-forge mamba`
@@ -157,19 +149,6 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 #### Remember to backup your raw data, metadata, scripts and conda environment(s), and final outputs!
 
-#### Footnote on taxizedb installation with devtools:
-
-```
-  git config --global http.sslCAInfo /etc/ssl/certs/ca-bundle.crt # Network goes into a proxy, we need to give the certificate of the proxy to git        
-  
-  unset https_proxy
-  
-  unset http_proxy
-
-  R 
-
-  devtools::install_github("ropensci/taxizedb")
-```
 
 ### Key Contributors
 
@@ -183,13 +162,13 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 ### Suggested Citation
 
-#### Please link to this GitHub repository and refer to the publication: Jensen et al. Short-term temporal variation of coastal marine eDNA. Environmental DNA XX (2022).
+#### Please to this GitHub repository using the DOI XXX and refer to the publication XXX.
 
 ### Acknowledgements
 
 #### The scripts called by the gwf workflow were mainly written by [Tobias G. Frøslev](https://github.com/tobiasgf) (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to [Dan Søndergaard](https://github.com/dansondergaard) for help getting started with the [gwf workflow tool](https://docs.gwf.app/), and a special mention to [Samuele Soraggi](https://github.com/SamueleSoraggi) for assistance with Python scripting and troubleshooting. We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
 
-### Citations (please see Jensen et al. for references to all software packages)
+### Citations
 
 #### Callahan, B. J., McMurdie, P. J., Rosen, M. J., Han, A. W., Johnson, A. J. A., & Holmes, S. P. (2016). DADA2: high-resolution sample inference from Illumina amplicon data. Nature methods, 13(7), 581-583.
 
@@ -199,4 +178,4 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 ### Questions
 
-#### If you have questions or issues, please email Eva Egelyng Sigsgaard (eva.sigsgaard@bio.au.dk) or Mads R. Jensen (mrj@bio.au.dk), or leave a comment on this repository.
+#### If you have questions or issues, please email Eva Egelyng Sigsgaard (eva.sigsgaard@bio.au.dk) or leave a comment on this repository.
