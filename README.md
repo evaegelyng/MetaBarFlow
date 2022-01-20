@@ -162,7 +162,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 ### Suggested Citation
 
-#### Please to this GitHub repository using the DOI XXX and refer to the publication XXX.
+#### Please cite this GitHub repository using the DOI, and refer to the publication: Agersnap, S., Sigsgaard, E. E., Jensen, M. R., Avila, M. P., Carl, H., Møller, P. R., Krøs, S. L., Knudsen, S. W., Wisz, M. & Thomsen, P. F. A national scale “BioBlitz” using citizen science and eDNA metabarcoding for monitoring coastal marine fish. Front Mar Sci (2022).
 
 ### Acknowledgements
 
