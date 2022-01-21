@@ -146,7 +146,7 @@ echo -e OldTaxID'\t'NewTaxID > MergedTaxIDs
 less merged.dmp | cut -f1,3 >> MergedTaxIDs
 ```
 
-#### In the taxonomy.r script, add your own path to the MergeTaxIDs table. Also, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Also consider whether the upper and lower margins should be adjusted (see explanation in the script).    
+#### In the taxonomy.r script, add your own path to the MergeTaxIDs table. Also, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Consider whether the upper and lower margins, or the thresholds applied when indicating possible misidentifications, should be adjusted (see explanation in the script).    
 
 #### In the workflow file, replace the project name and the path to the raw data with your own. If appropriate, change the length and quality requirements provided to the sickle command. 
 
