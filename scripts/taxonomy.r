@@ -9,7 +9,7 @@ args = commandArgs(trailingOnly=TRUE)
 # Authors: This script was mainly written by Tobias G. Frøslev (see https://github.com/tobiasgf/Bioinformatic-tools/tree/master/Eva_Sigsgaard_2018). 
 # It has here been modified by Eva Egelyng Sigsgaard such that instead of a fixed threshold ("upper margin") determining which BLAST hits to include for classification, this threshold
 # is determined for each query sequence as the minimum similarity obtained for the best matching taxid. Adrián Gómez has added the correction of outdated taxids that are no longer valid, 
-# as they have been merged with other taxids.
+# as they have been merged with other taxids. The functions for indicating possible misidentifications of reference sequences were mainly developed by Emil Ellegaard Thomassen.
 
 # The script requires a BLAST output from a set of OTUs
 # Minimum number of fields required are qseqid, staxid, pident, ssciname and evalue
@@ -104,14 +104,32 @@ for (i in unique (summary$qseqid)){
 # Add a column that shows whether the present taxid overlaps in sequence similarity with the best matching taxid, and should therefore be included in the taxonomic classification
 summary$include<-ifelse(summary$pident.max>=as.numeric(summary$pident.min.best),1,0)
 
-# Add a column that indicates whether an "included" taxid is more frequent below the upper threshold than above, suggesting possible misidentification
-summary$likely.misid<-"NA"  
+# Add a column that indicates whether there is an unexpectedly large range of variation in sequence similarity within the same included taxid, suggesting possible misidentifications of specimens in the database. Here, the threshold is set at 3% variation, as the BOLD database allows for 2% intraspecific variation (need to double-check this).
+summary$possible.misid.highrange<-"NA"  
 for (i in unique (summary$qseqid_staxid)) {
-    if (sum(summary[summary$qseqid_staxid==i,]$include==1) > 0 & sum(summary[summary$qseqid_staxid==i,]$include==1) < sum(summary[summary$qseqid_staxid==i,]$include==0)) {
-      summary[summary$qseqid_staxid==i,]$likely.misid<-"yes"
-    } else {
-      summary[summary$qseqid_staxid==i,]$likely.misid<-"no"
-    }
+  summary[summary$qseqid_staxid==i,]$possible.misid.highrange<-ifelse(summary[summary$qseqid_staxid==i,]$include==1 & (summary[summary$qseqid_staxid==i,]$pident.max - summary[summary$qseqid_staxid==i,]$pident.min) > 3,1,0)
+}
+
+# Test if one taxid in those to include stands out - adds 1 to possible.misid if pident.n of a certain taxid is 1 and the sum of all included sequences is greater than 2 times the number of taxids to include (suggests an underrepresented taxid) (Emil: 07/01/2022)
+summary$possible.misid.outlier<-"NA"  
+for (j in unique (summary$qseqid)) {
+  for (i in unique (summary[summary$qseqid==j,]$qseqid_staxid)) {
+    summary[summary$qseqid_staxid==i,]$possible.misid.outlier<-ifelse(summary[summary$qseqid_staxid==i,]$include==1 & summary[summary$qseqid_staxid==i,]$pident.n==1 & sum(summary[summary$qseqid==j & summary$include==1,]$pident.n)> 2*sum(summary[summary$qseqid==j,]$include==1),1,0)
+  }
+}
+
+# Test if the identification is solely based on less than 3 sequences - to detect identifications because of 1 or 2 high-similarity hits, which could be errorneous (Emil: 07/01/2022)
+summary$possible.misid.few<-"NA"  
+for (j in unique (summary$qseqid)) {
+  for (i in unique (summary[summary$qseqid==j,]$qseqid_staxid)) {
+    summary[summary$qseqid_staxid==i,]$possible.misid.few<-ifelse(summary[summary$qseqid_staxid==i,]$include==1 & sum(summary[summary$qseqid==j,]$include==1)==1 & summary[summary$qseqid_staxid==i,]$pident.n<3,1,0)
+  }
+}
+
+#Add summary column to detect possible.misid based on at least one of the preceeding tests (Emil: 10/01/2022)
+summary$possible.misid<-"NA"  
+for (i in unique (summary$qseqid_staxid)) {
+  summary[summary$qseqid_staxid==i,]$possible.misid<-ifelse(sum(as.integer(summary[summary$qseqid_staxid==i,]$possible.misid.highrange),as.integer(summary[summary$qseqid_staxid==i,]$possible.misid.outlier), as.integer(summary[summary$qseqid_staxid==i,]$possible.misid.few))>0,1,0)
 }
 
 # Write all the calculated values to a file
@@ -350,6 +368,12 @@ for(i in tax_table$qseqid){
 
 tax_table$score.id <- score.id
 
+# Add the "possible.misid column" to tax_table from summary table
+tax_table$possible.misid<-"NA"
+for (i in unique (tax_table$qseqid)){
+   tax_table[tax_table$qseqid==i,]$possible.misid<-ifelse(sum(summary[summary$qseqid==i,]$possible.misid==1) > 0,1,0)
+}
+      
 # In development (may be implemented officially in a future version of the pipeline):      
 # Get World Register of Marine Species (WoRMS) IDs and search the WoRMS database for synonyms
 
