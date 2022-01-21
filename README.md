@@ -1,4 +1,39 @@
-### This workflow allows efficient parallel processing of fastq files from Illumina sequencing of DNA metabarcoding libraries. I.e. sequencing libraries built on pools of amplicons from complex samples (e.g. eDNA samples or bulk samples with DNA from several taxa), which have each been PCR-amplified using a unique combination of oligonucleotide tags on the primers. The workflow operates with amplicon sequence variants (ASVs) throughout, i.e. sequences are not collapsed into OTUs. The workflow includes demultiplexing, quality and error filtering, BLAST searching, and taxonomic classification. Databases used for BLAST searching and taxonomic classification are downloaded locally, facilitating the analysis of large numbers of ASVs. The main outputs of the workflow are an ASV table (which ASVs are found in which samples) and the taxonomic classifications of these ASVs, based on a Last Common Ancestor (LCA) approach. Overlaps in sequence similarity to query sequences are used to determine which BLAST hits to include when assigning an LCA (Sigsgaard et al. 2020). Importantly, the automatic classifications always need to be checked carefully and manually, using general knowledge of taxonomy, local species occurrences, synonyms etc., in order to produce a more realistic final list of taxa. Enjoy!
+# MetaBarFlow
+DNA MetaBarcoding data workFlow
+
+## Introduction
+MetaBarFlow is a command line-based pipeline that allows efficient parallel processing of sequencing data from DNA metabarcoding. I.e. data from sequencing libraries built on pools of amplicons from complex samples (e.g. eDNA samples or bulk samples with DNA from several taxa), which have each been PCR-amplified using a unique combination of oligonucleotide tags on the primers. The workflow operates with amplicon sequence variants (ASVs) throughout, i.e. sequences are not collapsed into OTUs. The workflow includes demultiplexing, quality and error filtering, BLAST searching, and taxonomic classification. Databases used for BLAST searching and taxonomic classification are downloaded locally, facilitating the analysis of large numbers of ASVs. The main outputs of the workflow are an ASV table (which ASVs are found in which samples) and the taxonomic classifications of these ASVs, based on a Last Common Ancestor (LCA) approach. Overlaps in sequence similarity to query sequences are used to determine which BLAST hits to include when assigning an LCA (Sigsgaard et al. 2020). Importantly, the automatic classifications always need to be checked carefully and manually, using general knowledge of taxonomy, local species occurrences, synonyms etc., in order to produce a more realistic final list of taxa. Enjoy!
+
+Input:
+* fastq files, tag files, batch files (see details below)
+
+Output: 
+* log files, ASV list, ASV table, taxonomic classification of ASVs
+
+## Prerequisites
+
+Access to a high-performance computing cluster is required. 
+
+#### Dependencies - conda
+
+MetaBarFlow uses the package manager conda to install software into project-specific, shareable software environments. You can install conda like this:
+
+```
+wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+chmod +x miniconda.sh
+bash miniconda.sh -b
+./miniconda3/bin/conda init bash
+```
+
+#### Dependencies - gwf
+
+MetaBarFlow uses the python-based workflow tool gwf. The HPC used when developing MetaBarFlow uses the backend SLURM, but gwf also supports the backends local and SGE. To install gwf with conda run:
+
+```
+conda config --add channels gwforg
+conda install gwf
+```
+## How to use
 
 #### Make overall directories
 
@@ -150,7 +185,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 #### Remember to backup your raw data, metadata, scripts and conda environment(s), and final outputs!
 
 
-### Key Contributors
+## Key Contributors
 
 #### This pipeline was developed in the eDNA research group at the Department of Biology, Aarhus University, by:
 
@@ -160,15 +195,15 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 #### [Adrián Gómez Repollés](https://github.com/adriangeerre): Developer, diverse contributions 
 
-### Suggested Citation
+## Suggested Citation
 
 #### Please cite this GitHub repository using the DOI, and refer to the publication: Agersnap, S., Sigsgaard, E. E., Jensen, M. R., Avila, M. P., Carl, H., Møller, P. R., Krøs, S. L., Knudsen, S. W., Wisz, M. & Thomsen, P. F. A national scale “BioBlitz” using citizen science and eDNA metabarcoding for monitoring coastal marine fish. Front Mar Sci (2022).
 
-### Acknowledgements
+## Acknowledgements
 
 #### The scripts called by the gwf workflow were mainly written by [Tobias G. Frøslev](https://github.com/tobiasgf) (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to [Dan Søndergaard](https://github.com/dansondergaard) for help getting started with the [gwf workflow tool](https://docs.gwf.app/), and a special mention to [Samuele Soraggi](https://github.com/SamueleSoraggi) for assistance with Python scripting and troubleshooting. We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
 
-### Citations
+## Citations
 
 #### Callahan, B. J., McMurdie, P. J., Rosen, M. J., Han, A. W., Johnson, A. J. A., & Holmes, S. P. (2016). DADA2: high-resolution sample inference from Illumina amplicon data. Nature methods, 13(7), 581-583.
 
@@ -176,6 +211,6 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 #### Sigsgaard, E. E., Olsen, K., Hansen, M. D., Hansen, O. L. P., Høye, T. T., Svenning, J. C., & Thomsen, P. F. (2020). Environmental DNA metabarcoding of cow dung reveals taxonomic and functional diversity of invertebrate assemblages. Molecular ecology, 30(13), 3374-3389.
 
-### Questions
+## Questions
 
 #### If you have questions or issues, please email Eva Egelyng Sigsgaard (eva.sigsgaard@bio.au.dk) or leave a comment on this repository.
