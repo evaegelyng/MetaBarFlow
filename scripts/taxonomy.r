@@ -104,7 +104,7 @@ for (i in unique (summary$qseqid)){
 # Add a column that shows whether the present taxid overlaps in sequence similarity with the best matching taxid, and should therefore be included in the taxonomic classification
 summary$include<-ifelse(summary$pident.max>=as.numeric(summary$pident.min.best),1,0)
 
-# Add a column that indicates whether there is an unexpectedly large range of variation in sequence similarity within the same included taxid, suggesting possible misidentifications of specimens in the database. Here, the threshold is set at 3% variation, as the BOLD database allows for 2% intraspecific variation (need to double-check this).
+# Add a column that indicates whether there is an unexpectedly large range of variation in sequence similarity within the same included taxid, suggesting possible misidentifications of specimens in the database. Here, the threshold is set at 3% variation, but the appropriate level depends on the metabarcode and target organisms.
 summary$possible.misid.highrange<-"NA"  
 for (i in unique (summary$qseqid_staxid)) {
   summary[summary$qseqid_staxid==i,]$possible.misid.highrange<-ifelse(summary[summary$qseqid_staxid==i,]$include==1 & (summary[summary$qseqid_staxid==i,]$pident.max - summary[summary$qseqid_staxid==i,]$pident.min) > 3,1,0)
