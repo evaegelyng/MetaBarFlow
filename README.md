@@ -197,8 +197,6 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 #### Sigsgaard, E. E., Soraggi, S., Jensen, M. R., Repollés, A. G., Thomassen, E. E., & Thomsen, P. F. (2022). MetaBarFlow (Version 0.1.0-alpha) [Computer software]. https://doi.org/10.5281/zenodo.5898411 
 
-[![DOI](https://zenodo.org/badge/242142350.svg)](https://zenodo.org/badge/latestdoi/242142350)
-
 ## Acknowledgements
 
 #### The scripts called by the workflow were mainly written by [Tobias G. Frøslev](https://github.com/tobiasgf) (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to [Dan Søndergaard](https://github.com/dansondergaard) for help getting started with [gwf](https://docs.gwf.app/). We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
