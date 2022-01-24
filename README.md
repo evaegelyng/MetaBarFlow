@@ -187,13 +187,15 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 #### Philip Francis Thomsen (Principal Investigator): Scientific input, especially on taxonomic classification
 
+#### [Mads Reinholdt Jensen](https://github.com/MadsRJ): Scientific input, especially on taxonomic classification
+
 #### [Adrián Gómez Repollés](https://github.com/adriangeerre): Developer, diverse contributions 
 
 #### [Emil Ellegaard Thomassen](https://github.com/emilthomassen): Developer, contributing to taxonomic classification
 
 ## Suggested Citation
 
-#### Sigsgaard, E. E., Soraggi, S., Thomsen, P. F., Repollés, A. G., & Thomassen, E. E. MetaBarFlow [Computer software]. https://github.com/evaegelyng/MetaBarFlow
+#### Sigsgaard, E. E., Soraggi, S., Thomsen, P. F., Jensen, M. R., Repollés, A. G., & Thomassen, E. E. MetaBarFlow [Computer software]. https://github.com/evaegelyng/MetaBarFlow
 
 ## Acknowledgements
 
