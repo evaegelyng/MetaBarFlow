@@ -25,14 +25,6 @@ bash miniconda.sh -b
 ./miniconda3/bin/conda init bash
 ```
 
-#### Dependencies - gwf
-
-MetaBarFlow uses the python-based workflow tool gwf. The HPC used when developing MetaBarFlow uses the backend SLURM, but gwf also supports the backends local and SGE. To install gwf with conda run:
-
-```
-conda config --add channels gwforg
-conda install gwf
-```
 ## How to use
 
 #### Make overall directories
@@ -63,7 +55,7 @@ conda install gwf
 
 `conda env create --name projectname -f metabarflow_XXXXXX.yml`
   
-#### If you cannot create the environment based on the description file (updated packages may cause problems), create your own environment, beginning with the packages that are directly called in the scripts (cutadapt, sickle, taxizedb etc.). It can be helpful to use mamba to install packages, as it is faster than conda.
+#### If you cannot create the environment based on the description file (updated packages may cause problems), create your own environment, beginning with the [workflow tool gwf](https://docs.gwf.app/) and the packages that are directly called in the scripts (cutadapt, sickle, taxizedb etc.). It can be helpful to use mamba to install packages, as it is faster than conda.
 
    `conda install -c conda-forge mamba`
    
@@ -205,7 +197,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 ## Acknowledgements
 
-#### The scripts called by the gwf workflow were mainly written by [Tobias G. Frøslev](https://github.com/tobiasgf) (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to [Dan Søndergaard](https://github.com/dansondergaard) for help getting started with the [gwf workflow tool](https://docs.gwf.app/). We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
+#### The scripts called by the workflow were mainly written by [Tobias G. Frøslev](https://github.com/tobiasgf) (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to [Dan Søndergaard](https://github.com/dansondergaard) for help getting started with [gwf](https://docs.gwf.app/). We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
 
 ## Citations
 
