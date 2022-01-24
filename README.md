@@ -101,7 +101,7 @@ or if you have many libraries, run the following for the entire raw data folder
 
  `sbatch YOUR_PATH/scripts/fastqc.sh`
    
-#### In each library data folder, make a tab separated file named tags.txt containing the sample names and corresponding forward and reverse tag sequences (see an example in data folder of this repository). Remember to put the library number/PCR replicate number at the end of each sample name (e.g. "SAMPLE1_1" for library 1, "SAMPLE1_2" for library 2 and so on. Check that none of the sample names themselves contain these endings, e.g. "SAMPLE_1"). This way, PCR replicates will be kept separate when the data from the different libraries are merged. You can start by making the file for library 1 in excel, transfer to the server, and then use this file as a template for the remaining libraries (just replace replicate number in the sample names). Note that these txt-files should be in UNIX format (not Windows - can be checked e.g. using notepad++). In some cases, it is also necessary to add an empty line at the end of each tags file, and to remove the tab separator ("\t") in all instances of "line.split("\t")" in the workflow.
+#### In each library data folder, make a tab separated file named tags.txt containing the sample names and corresponding forward and reverse tag sequences (see an example in "example_files" folder of this repository). Remember to put the library number/PCR replicate number at the end of each sample name (e.g. "SAMPLE1_1" for library 1, "SAMPLE1_2" for library 2 and so on. Check that none of the sample names themselves contain these endings, e.g. "SAMPLE_1"). This way, PCR replicates will be kept separate when the data from the different libraries are merged. You can start by making the file for library 1 in excel, transfer to the server, and then use this file as a template for the remaining libraries (just replace replicate number in the sample names). Note that these txt-files should be in UNIX format (not Windows - can be checked e.g. using notepad++). In some cases, it is also necessary to add an empty line at the end of each tags file, and to remove the tab separator ("\t") in all instances of "line.split("\t")" in the workflow.
 
 #### The script create_batch.sh can be used to make a file (batchfileDADA2.list) in each library data folder containing the fastq file names, the primer sequences, and the minimum length required for a read (unaligned, i.e. forward or reverse read) after trimming of primers and tags. Replace the primer sequences and length specified in the script with those appropriate for your own project. If your primers contain inosine bases ("I"), these need to be replaced with "N", as the software does not recognize "I". 
 
@@ -185,17 +185,17 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 #### [Samuele Soraggi](https://github.com/SamueleSoraggi): Developer, diverse contributions
 
-#### Philip Francis Thomsen (Principal Investigator): Scientific input, especially on taxonomic classification
-
 #### [Mads Reinholdt Jensen](https://github.com/MadsRJ): Scientific input, especially on taxonomic classification
 
 #### [Adrián Gómez Repollés](https://github.com/adriangeerre): Developer, diverse contributions 
 
 #### [Emil Ellegaard Thomassen](https://github.com/emilthomassen): Developer, contributing to taxonomic classification
 
+#### [Philip Francis Thomsen](https://github.com/pfthomsen) (Principal Investigator): Scientific input, especially on taxonomic classification
+
 ## Suggested Citation
 
-#### Sigsgaard, E. E., Soraggi, S., Thomsen, P. F., Jensen, M. R., Repollés, A. G., & Thomassen, E. E. MetaBarFlow [Computer software]. https://github.com/evaegelyng/MetaBarFlow
+#### Sigsgaard, E. E., Soraggi, S., Jensen, M. R., Repollés, A. G., Thomassen, E. E. & Thomsen, P. F. MetaBarFlow [Computer software]. https://github.com/evaegelyng/MetaBarFlow
 
 ## Acknowledgements
 
