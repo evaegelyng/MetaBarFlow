@@ -1,0 +1,33 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: MetaBarFlow
+message: >-
+  "If you use this pipeline, please cite it as
+  below."
+type: software
+authors:
+  - given-names: Eva Egelyng
+    family-names: Sigsgaard
+    email: eva.sigsgaard@bio.au.dk
+    affiliation: Aarhus University
+    orcid: 'https://orcid.org/0000-0002-9396-1550'
+  - given-names: Samuele
+    family-names: Soraggi
+    email: samuele@birc.au.dk
+    affiliation: Aarhus University
+    orcid: 'https://orcid.org/0000-0002-1159-5535'
+  - given-names: Philip Francis
+    family-names: Thomsen
+    email: pfthomsen@bio.au.dk
+    affiliation: Aarhus University
+    orcid: 'https://orcid.org/0000-0002-9867-4366'
+  - given-names: Adrián Gómez
+    family-names: Repollés
+    affiliation: Aarhus University
+    email: adriangomezrepolles@gmail.com
+  - given-names: Emil Ellegaard
+    family-names: Thomassen
+    affiliation: Aarhus University
+    email: eet@bio.au.dk
