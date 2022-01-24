@@ -18,11 +18,6 @@ authors:
     email: samuele@birc.au.dk
     affiliation: Aarhus University
     orcid: 'https://orcid.org/0000-0002-1159-5535'
-  - given-names: Philip Francis
-    family-names: Thomsen
-    email: pfthomsen@bio.au.dk
-    affiliation: Aarhus University
-    orcid: 'https://orcid.org/0000-0002-9867-4366'
   - given-names: Mads Reinholdt
     family-names: Jensen
     affiliation: Aarhus University
@@ -36,4 +31,9 @@ authors:
     family-names: Thomassen
     affiliation: Aarhus University
     email: eet@bio.au.dk
+  - given-names: Philip Francis
+    family-names: Thomsen
+    email: pfthomsen@bio.au.dk
+    affiliation: Aarhus University
+    orcid: 'https://orcid.org/0000-0002-9867-4366'
 repository-code: 'https://github.com/evaegelyng/MetaBarFlow'
