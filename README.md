@@ -193,7 +193,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 ## Suggested Citation
 
-#### Sigsgaard, E. E., Soraggi, S., Thomsen, P. F., Repollés, A. G., & Thomassen, E. E. MetaBarFlow [Computer software]
+#### Sigsgaard, E. E., Soraggi, S., Thomsen, P. F., Repollés, A. G., & Thomassen, E. E. MetaBarFlow [Computer software]. https://github.com/evaegelyng/MetaBarFlow
 
 ## Acknowledgements
 
