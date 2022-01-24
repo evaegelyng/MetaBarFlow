@@ -189,7 +189,9 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 #### This pipeline was developed in the eDNA research group at the Department of Biology, Aarhus University, by:
 
-#### [Eva Egelyng Sigsgaard](https://github.com/evaegelyng): Lead developer and maintainer since 2019
+#### [Eva Egelyng Sigsgaard](https://github.com/evaegelyng): Lead developer and maintainer
+
+#### [Samuele Soraggi](https://github.com/SamueleSoraggi): Developer, diverse contributions
 
 #### Philip Francis Thomsen (Principal Investigator): Scientific input, especially on taxonomic classification
 
@@ -203,7 +205,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 ## Acknowledgements
 
-#### The scripts called by the gwf workflow were mainly written by [Tobias G. Frøslev](https://github.com/tobiasgf) (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to [Dan Søndergaard](https://github.com/dansondergaard) for help getting started with the [gwf workflow tool](https://docs.gwf.app/), and a special mention to [Samuele Soraggi](https://github.com/SamueleSoraggi) for assistance with Python scripting and troubleshooting. We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
+#### The scripts called by the gwf workflow were mainly written by [Tobias G. Frøslev](https://github.com/tobiasgf) (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to [Dan Søndergaard](https://github.com/dansondergaard) for help getting started with the [gwf workflow tool](https://docs.gwf.app/). We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
 
 ## Citations
 
