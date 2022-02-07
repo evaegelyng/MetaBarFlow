@@ -328,7 +328,7 @@ tax_table <- my_classified_result$classified_table
 
 write.table(tax_table, paste(args[3],".backup",sep=""), sep = "\t", quote = F, row.names = F)
 
-# Determine a "final" taxonomic ID, using scores combined with a minimum similarity threshold of 98% for species level id
+# Determine a "final" taxonomic ID, using scores combined with a minimum similarity threshold of 98% for species-level id
 tax_table <- read.table(paste(args[3],".backup",sep=""),sep="\t",header=TRUE)
 
 score.id = c()
@@ -374,19 +374,30 @@ for (i in unique (tax_table$qseqid)){
    tax_table[tax_table$qseqid==i,]$possible.misid<-ifelse(sum(summary[summary$qseqid==i,]$possible.misid==1) > 0,1,0)
 }
       
-# In development (may be implemented officially in a future version of the pipeline):      
+# Optionally, synonyms of scientific names can be downloaded from an appropriate database (WoRMS in the example below. See "taxize" documentation for other database options).
+# However, it should be stressed that such a search should be complemented with manual searching across databases, as it is unlikely to be exhaustive.
+      
 # Get World Register of Marine Species (WoRMS) IDs and search the WoRMS database for synonyms
 
+# Detach taxizedb package before loading taxize, as these packages have similar functions     
 #detach("package:taxizedb", unload=TRUE)
-#library(taxize) # For retrieving synonyms
 
-#tax_table$nwords <- sapply(strsplit(as.character(tax_table$species), " "), length)
-#tax_table$synonyms<-"NA" 
+# Load taxize package
+#library(taxize) 
+
+# Create a column providing the number of words in the final identification of each sequence.     
+#tax_table$nwords <- sapply(strsplit(as.character(tax_table$score.id), " "), length)
+      
+# Create a column for the synonyms found in the chosen database    
+#tax_table$synonyms<-"NA"  
+
+# Create a column for the currently valid scientific name
 #tax_table$valid_name<-"NA"
 
+# For each eDNA sequence with a species-level identification (nwords equal to 2), add synonyms and valid name     
 #for (i in tax_table$qseqid){
 #
-#   if (tax_table[tax_table$qseqid==i,]$nwords==2 & tax_table[tax_table$qseqid==i,]$pident>=0.98){
+#   if (tax_table[tax_table$qseqid==i,]$nwords==2){
 #       
 #       worms_id<-get_wormsid(tax_table[tax_table$qseqid==i,]$species)
 #
@@ -403,5 +414,5 @@ for (i in unique (tax_table$qseqid)){
 #       }
 #}
 
-#Write the result to a table
+#Write the taxonomic results to a table
 write.table(tax_table, args[3], sep = "\t", quote = F, row.names = F)
