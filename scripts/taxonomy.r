@@ -2,63 +2,65 @@
 args = commandArgs(trailingOnly=TRUE)
 ######################################################################################################################################################
 
-# Taxonomical classification of OTUs
+# Taxonomical classification of ASVs
 
 ######################################################################################################################################################
 #
-# Authors: This script was mainly written by Tobias G. Frøslev (see https://github.com/tobiasgf/Bioinformatic-tools/tree/master/Eva_Sigsgaard_2018). 
-# It has here been modified by Eva Egelyng Sigsgaard such that instead of a fixed threshold ("upper margin") determining which BLAST hits to include for classification, this threshold
-# is determined for each query sequence as the minimum similarity obtained for the best matching taxid. Adrián Gómez has added the correction of outdated taxids that are no longer valid, 
-# as they have been merged with other taxids. The functions for indicating possible misidentifications of reference sequences were mainly developed by Emil Ellegaard Thomassen.
+# Authors: This script was mainly written by Tobias G. Frøslev (Copenhagen University). 
+# It has here been modified by Eva Egelyng Sigsgaard (EES) such that instead of a fixed threshold ("upper margin") determining which BLAST hits to include for classification, this threshold
+# is determined for each query sequence as the minimum similarity obtained for the best matching taxid. Adrián Gómez Repollés (AGR) and Caitlin Kim Frankish (CKF) have written the code to correct outdated taxids that are no longer valid, 
+# as they have been merged with other taxids. The functions for indicating possible misidentifications of reference sequences were mainly developed by Emil Ellegaard Thomassen (EET).
 
-# The script requires a BLAST output from a set of OTUs
-# Minimum number of fields required are qseqid, staxid, pident, ssciname and evalue
+# The script requires a BLAST output from a set of ASVs
+# Minimum fields required are qseqid, staxid, pident, ssciname and evalue
 
 # Instructions
 # 1) Load the three functions below: assign_taxonomy, prefilter, get_classification, evaluate_classification
-# 2) Classify your OTUs by running the wrapper function assign_taxonomy like this:
+# 2) Classify your ASVs by running the wrapper function assign_taxonomy like this:
 #   classified_table <- assign_taxonomy(INPUT.blasthits, lower_margin = 2, remove = c("unwanted_taxon1","unwanted_taxon2"))
 #
 # Explanation to input
-#   INPUT.blasthits is the blast-results
-#   upper_margin is the margin used for suboptimal hits used for classification - e.g. a margin of 0.5 means that hits of 100% to 99.5% is used og 95% to 94.5%, if the best hit is 100% or 95% respectively.
-#   lower_margin: hits down to this margin from the best hit are shown in the output as alternative possibilities, but not used for taxonomic evaluation.
+#   INPUT.blasthits are the BLAST results
+#   upper_margin is the margin used for suboptimal hits used for classification - e.g. a margin of 0.5 means that hits of 100% to 99.5% is used or 95% to 94.5%, if the best hit is 100% or 95%, respectively.
+#   lower_margin: hits down to this margin from the best hit are shown in the output as alternative possibilities, but are not used for taxonomic classification.
 #   remove: a vector of taxa to exclude from the evaluation. Could be e.g. remove = c("uncultured","environmental") to exclude hits with no precise annotation, or names of species known not to be in the study area.
 #
 # Explanation to output
-#   the output is a list with
-#   $classified_table : the table with all OTUs classified. One row per OTU
-#        this table contains the estimated best classification at all taxonomic levels, based on a weighted score (of the evalue) of the hits in the upper_margin, 
-#        each taxonomic level gets a score indicating the agreement on the selected classification at that level..
-#        also a string of alternatives and their matches (%) this string includes hits from both upper and lower margin
-#   $all_classifications: this is the table used to make the classified_table. It contains all hits above lower_magrin for all OTUs and their classifications (only upper_margin).
+#   The output is a list with
+#   $classified_table : the table with all ASVs classified. One row per ASV
+#        This table contains the estimated best classification at all taxonomic levels, based on the hits in the upper_margin (hits are weighted by evalue), 
+#        Each taxonomic level gets a score indicating the agreement on the selected classification at that level.
+#        Also a string of alternatives and their matches (%). This string includes hits from both upper and lower margin
+#   $all_classifications: this is the table used to make the classified_table. It contains all hits above lower_margin for all ASVs and their classifications (only upper_margin).
 #   ...and the input parameters
 
+# Print the arguments given in the gwf workflow file
 print(args[1])
 print(args[2])
 print(args[3])
 
 # Load required packages
-library(taxizedb) # For retrieving taxonomic classification
+library(taxizedb) # For retrieving taxonomic classifications
 library(dplyr)
 library(tidyr)
 
 # Provide API key for NCBI
 options(ENTREZ_KEY="YOUR_KEY")
 
-# Read the completed blast results into a table
+# Read the completed BLAST results into a table
 IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 
-# If using nt or BOLD database alone, use the following to add an empty column for sscinames
+# Use the following to add an empty column for ssciname. This is a temporary fix, as we have had problems retrieving scientific names from BLAST against our local reference database.
+# If you would like to have the scientific names of each BLAST hit, try adding "ssciname" to the BLAST command in the gwf workflow file, and do not create the empty column.
 IDtable$V16<-"NA"
 
-# Read the possible problematic TaxIDs as a table
+# Read the possible problematic taxids as a table
 MergedTaxIDs<-read.table("YOUR_PATH/MergedTaxIDs", header=TRUE)
 
 # Add header information
 names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qstart","qend","sstart","send","evalue","bitscore","qlen","qcovs","staxid","ssciname")
 
-# Extract only those rows where the qcovs score is 100. First check if qcovs contains hits with 100%
+# Extract only those rows where the query coverage is 100. First check whether there are in fact any hits with 100% query coverage.
     if (max(IDtable$qcovs) == 100 ) {
       IDtable <- IDtable[IDtable$qcovs==100,]  
     } else {
@@ -118,7 +120,7 @@ for (j in unique (summary$qseqid)) {
   }
 }
 
-# Test if the identification is solely based on less than 3 sequences - to detect identifications because of 1 or 2 high-similarity hits, which could be errorneous (Emil: 07/01/2022)
+# Test if the identification is solely based on less than 3 sequences - to detect identifications because of 1 or 2 high-similarity hits, which could be errorneous (EET: 07/01/2022)
 summary$possible.misid.few<-"NA"  
 for (j in unique (summary$qseqid)) {
   for (i in unique (summary[summary$qseqid==j,]$qseqid_staxid)) {
@@ -126,7 +128,7 @@ for (j in unique (summary$qseqid)) {
   }
 }
 
-#Add summary column to detect possible.misid based on at least one of the preceeding tests (Emil: 10/01/2022)
+#Add summary column to detect possible.misid based on at least one of the preceeding tests (EET: 10/01/2022)
 summary$possible.misid<-"NA"  
 for (i in unique (summary$qseqid_staxid)) {
   summary[summary$qseqid_staxid==i,]$possible.misid<-ifelse(sum(as.integer(summary[summary$qseqid_staxid==i,]$possible.misid.highrange),as.integer(summary[summary$qseqid_staxid==i,]$possible.misid.outlier), as.integer(summary[summary$qseqid_staxid==i,]$possible.misid.few))>0,1,0)
@@ -145,11 +147,11 @@ for (i in unique (IDtable$qseqid)){
 
 # FunctionX
 # Wrapper function using the three main functions - each step can also be done manually
-assign_taxonomy <- function(table,lower_margin=2, remove = c("")) {       # Eva removed constant upper margin specification
-  pf <- prefilter(table, lower_margin, remove)   # Eva removed constant upper margin specification
+assign_taxonomy <- function(table,lower_margin=2, remove = c("")) {       # EES removed constant upper margin specification
+  pf <- prefilter(table, lower_margin, remove)   # EES removed constant upper margin specification
   
   # Replace old tax ids with new ones if they have a match in mergedtaxids dataframe #CKF 
-  pf$OldTaxID<-as.numeric(pf$staxid) # Making an extra column on pf, same as staxid but with a new name so it can match with the mergedtaxid dataframe. Eva added as.numeric to avoid error w. incompatible column classes
+  pf$OldTaxID<-as.numeric(pf$staxid) # Making an extra column on pf, same as staxid but with a new name so it can match with the mergedtaxid dataframe. EES added as.numeric to avoid error w. incompatible column classes
   pf_intermediate<-pf %>%
   dplyr::left_join(MergedTaxIDs, by=c("OldTaxID"))  # now we can join with MergedTaxIDs using the oldtaxid column
   
@@ -175,7 +177,7 @@ assign_taxonomy <- function(table,lower_margin=2, remove = c("")) {       # Eva 
   
   gc <- get_classification(pf_new)
   cf <- evaluate_classification(gc[[1]])     # AGR # gc[2] is the wrong taxid not classified 
-  result <- list(classified_table=cf$taxonon_table, all_classifications=cf$all_taxa_table, all_classifications_summed=cf$all_taxa_table_summed, lower=lower_margin, removed=remove)  # Eva removed upper_margin
+  result <- list(classified_table=cf$taxonon_table, all_classifications=cf$all_taxa_table, all_classifications_summed=cf$all_taxa_table_summed, lower=lower_margin, removed=remove)  # EES removed upper_margin
   if (length(gc[[2]]) != 0) {
     print(paste0("Taxids not found in the classification: ", gc[2])) # AGR - Print the list of not matched taxids  
   }
@@ -183,8 +185,8 @@ assign_taxonomy <- function(table,lower_margin=2, remove = c("")) {       # Eva 
 }
 
 # Function1
-# Filter data OTU-wise according to upper and lower margin set, and taxa to exclude
-prefilter <- function(IDtable, lower_margin=2, remove = c("uncultured", "environmental")) {   # Eva removed constant upper_margin specification
+# Filter data ASV-wise according to upper and lower margin set, and taxa to exclude
+prefilter <- function(IDtable, lower_margin=2, remove = c("uncultured", "environmental")) {   # EES removed constant upper_margin specification
   new_IDtable <- IDtable[0,] # prepare filtered matchlist
   IDtable <- IDtable[!IDtable$staxid == "N/A",]
   ids <- names(table(IDtable$qseqid))
@@ -200,7 +202,7 @@ prefilter <- function(IDtable, lower_margin=2, remove = c("uncultured", "environ
       if (nrow(test2) > 1) {test <- test2}
     }
     max <- max(test$pident)
-    upper <- as.numeric(test$pident.min.best[1]) # Eva set the minimum similarity threshold for including a hit to the minimum similarity of the best matching taxid
+    upper <- as.numeric(test$pident.min.best[1]) # EES set the minimum similarity threshold for including a hit to the minimum similarity of the best matching taxid
     lower <- max-as.numeric(lower_margin)
     test <- test[which(test$pident >= lower),] # select all lines for a query
     test$margin <- "lower"
@@ -213,7 +215,7 @@ prefilter <- function(IDtable, lower_margin=2, remove = c("uncultured", "environ
 }
 
 # Function2
-# Get full taxonomic path for all hits within the upper limit of each OTU. Identical species are only queried once.
+# Get full taxonomic path for all hits within the upper limit of each ASV. Identical species are only queried once.
 
 get_classification <- function(IDtable2) {
   require(taxizedb)
@@ -271,7 +273,7 @@ get_classification <- function(IDtable2) {
 }
 
 # Function3
-# Function for evaluating the taxonomic assignment of each OTU. All hits within the upper margin are used in the evaluation weighted by their evalue, so that suboptimal matches have a lower weight. All hits within the lower margin are put into the output (but not used for evaluating classification)
+# Function for evaluating the taxonomic assignment of each ASV. All hits within the upper margin are used in the evaluation weighted by their evalue, so that suboptimal matches have a lower weight. All hits within the lower margin are put into the output (but not used for evaluating classification)
 evaluate_classification <- function(classified) {
   require(tidyr)
   require(dplyr)
@@ -281,7 +283,7 @@ evaluate_classification <- function(classified) {
     print(paste0("last step: progress: ", round(((i/length(ids)) * 100),0) ,"%")) # make a progressline
     test <- classified[which(classified$qseqid == name),]
     test2 <- test %>% filter(margin == "upper")
-    test2$score <- 100*(1/test2$evalue)/sum(1/test2$evalue)  # HER BEREGNES SCOREN FOR ALLE MATCHES PER OTU
+    test2$score <- 100*(1/test2$evalue)/sum(1/test2$evalue)  # HERE THE SCORE FOR ALL MATCHES PER ASV IS CALCULATED
     test4 <- test2 %>% filter(margin == "upper") %>%
       dplyr::select(margin,qseqid,sseqid,staxid,pident,score,qcovs,kingdom,phylum,class,order,family,genus,species) %>% 
       group_by(qseqid,kingdom, phylum,class,order,family,genus,species) %>% 
@@ -321,8 +323,8 @@ evaluate_classification <- function(classified) {
 }
 
 
-# Classify your OTUs by running the wrapper (functionX) "assign_taxonomy" like this. Consider whether it makes sense to remove specific hits or taxa from the evaluation (see explanation below):
-my_classified_result <- assign_taxonomy(IDtable, lower_margin = 2, remove = c("uncultured", "environmental")) # Eva removed constant upper_margin specification
+# Classify your ASVs by running the wrapper (functionX) "assign_taxonomy" like this. Consider whether it makes sense to remove specific hits or taxa from the evaluation (see explanation below):
+my_classified_result <- assign_taxonomy(IDtable, lower_margin = 2, remove = c("uncultured", "environmental")) # EES removed constant upper_margin specification
 
 tax_table <- my_classified_result$classified_table 
 
