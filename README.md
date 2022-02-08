@@ -138,7 +138,7 @@ echo -e OldTaxID'\t'NewTaxID > MergedTaxIDs
 less merged.dmp | cut -f1,3 >> MergedTaxIDs
 ```
 
-#### In the taxonomy.r script, add your own path to the MergeTaxIDs table. Also, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Consider whether the upper and lower margins, or the thresholds applied when indicating possible misidentifications, should be adjusted (see explanation in the script).    
+#### In the taxonomy.r script, add your own path to the MergeTaxIDs table. Also, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Consider whether the lower margin, the thresholds applied when indicating possible misidentifications, or the similarity threshold for species-level identification should be adjusted (see explanations in the script).    
 
 #### In the workflow file, replace the project name and the path to the raw data with your own. If appropriate, change the length and quality requirements provided to the sickle command. 
 
@@ -199,7 +199,7 @@ less merged.dmp | cut -f1,3 >> MergedTaxIDs
 
 ## Acknowledgements
 
-#### The scripts called by the workflow were mainly written by [Tobias G. Frøslev](https://github.com/tobiasgf) (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to [Dan Søndergaard](https://github.com/dansondergaard) for help getting started with [gwf](https://docs.gwf.app/), and to Caitlin Kim Frankish for help with the code to correct outdated taxids. We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
+#### The scripts called by the workflow were mainly written by [Tobias G. Frøslev](https://github.com/tobiasgf) (see Frøslev et al. 2017), and are to a large extent based on the DADA2 package (Callahan et al. 2016). Thanks to [Dan Søndergaard](https://github.com/dansondergaard) for help getting started with [gwf](https://docs.gwf.app/), and to [Caitlin Kim Frankish](https://github.com/cfrankish) for help with the code to correct outdated taxids. We thank GenomeDK at the Bioinformatic Research Center (BiRC), Aarhus University, for providing computational resources. This work was supported by the The Velux Foundations (grant 21517), the Carlsberg Foundation (grant CF18-0949) and The Faculty of Natural Sciences, Aarhus University (grant 27744).
 
 ## Citations
 
