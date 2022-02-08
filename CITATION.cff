@@ -36,7 +36,7 @@ authors:
     email: pfthomsen@bio.au.dk
     affiliation: Aarhus University
     orcid: 'https://orcid.org/0000-0002-9867-4366'
-version: 0.1.0-alpha
+version: 0.1.0
 doi: 10.5281/zenodo.6006700
 date-released: 2022-01-24
 repository-code: 'https://github.com/evaegelyng/MetaBarFlow'
