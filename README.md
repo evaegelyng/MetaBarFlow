@@ -105,7 +105,9 @@ or if you have many libraries, run the following for the entire raw data folder
 
 #### The script create_batch.sh can be used to make a file (batchfileDADA2.list) in each library data folder containing the fastq file names, the primer sequences, and the minimum length required for a read (unaligned, i.e. forward or reverse read) after trimming of primers and tags. Replace the primer sequences and length specified in the script with those appropriate for your own project. If your primers contain inosine bases ("I"), these need to be replaced with "N", as the software does not recognize "I". 
 
-#### If appropriate, change the minimum length requirement in the match_pairs.r script. Check whether it would be appropriate to change any of the options set for the blastn command, and add your own database path. A widely used blast database is the NCBI GenBank "nt" database, which can be downloaded accordingly (inside a fitting directory, and with a stable internet connection):
+#### If appropriate, change the quality score threshold used by sickle, and the minimum length requirements for sickle and the match_pairs.r script. If you have used the Illumina NovaSeq platform, quality scores for base calls have been binned into four categories, and the error modelling performed by DADA2 (in remove_errors.r) will therefore be suboptimal. Until this issue is solved in the DADA2 package, there are different possibilities to improve the error modelling yourself, see e.g. [this blog post](https://bleepcoder.com/dada2/839961937/binned-quality-scores-and-their-effect-on-non-decreasing). 
+
+#### Check whether it would be appropriate to change any of the options set for the blastn command, and add your own database path. A widely used blast database is the NCBI GenBank "nt" database, which can be downloaded accordingly (inside a fitting directory, and with a stable internet connection):
 
 `update_blastdb.pl nt --timeout 500`
 
@@ -138,7 +140,7 @@ echo -e OldTaxID'\t'NewTaxID > MergedTaxIDs
 less merged.dmp | cut -f1,3 >> MergedTaxIDs
 ```
 
-#### In the taxonomy.r script, add your own path to the MergeTaxIDs table. Also, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Consider whether the lower margin, the thresholds applied when indicating possible misidentifications, or the similarity threshold for species-level identification should be adjusted (see explanations in the script).    
+#### In the taxonomy.r script, add your own path to the MergedTaxIDs table. Also, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Consider whether the lower margin, the thresholds applied when indicating possible misidentifications, or the similarity threshold for species-level identification should be adjusted (see explanations in the script).    
 
 #### In the workflow file, replace the project name and the path to the raw data with your own. If appropriate, change the length and quality requirements provided to the sickle command. 
 
