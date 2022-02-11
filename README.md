@@ -53,21 +53,25 @@ bash miniconda.sh -b
  
 #### Create a conda environment based on the description file
 
-`conda env create --name projectname -f metabarflow_XXXXXX.yml`
+  `conda env create --name projectname -f metabarflow_XXXXXX.yml`
   
 #### If you cannot create the environment based on the description file (updated packages may cause problems), create your own environment, beginning with the [workflow tool gwf](https://docs.gwf.app/) and the packages that are directly called in the scripts (cutadapt, sickle, taxizedb etc.). It can be helpful to use mamba to install packages, as it is faster than conda.
 
-   `conda install -c conda-forge mamba`
+  `conda install -c conda-forge mamba`
    
-#### The taxizedb NCBI database should be updated regularly to keep up to date with the GenBank nt database (there seems to be some lag in the taxizedb online database) 
+#### Download the taxizedb NCBI database:
 
 ```
   R
   
   library("taxizedb")
   
-  db_download_ncbi()
+  db_download_ncbi() 
 ```
+
+#### This database should be updated regularly to keep up to date with the GenBank nt database. To update run as above, but with overwrite enabled:
+
+   `db_download_ncbi(overwrite=TRUE)`
 
 #### In the root data folder, download the raw sequencing data. If you have been provided with a csv file with links to the files you can run the following command to download all files at once:
 
