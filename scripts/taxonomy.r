@@ -328,15 +328,17 @@ my_classified_result <- assign_taxonomy(IDtable, lower_margin = 2, remove = c("u
 
 tax_table <- my_classified_result$classified_table 
 
-write.table(tax_table, paste(args[3],".backup",sep=""), sep = "\t", quote = F, row.names = F)
-
+# Add maximum similarity for the best matching taxid to tax_table from summary table (EES 25-01-2022)
+tax_table$pident.max.best<-"NA"
+for (i in unique (tax_table$qseqid)){
+   tax_table[tax_table$qseqid==i,]$pident.max.best<-summary[summary$qseqid==i,]$pident.max.best[1]
+}
+                                      
 # Determine a "final" taxonomic ID, using scores combined with a minimum similarity threshold of 98% for species-level id
-tax_table <- read.table(paste(args[3],".backup",sep=""),sep="\t",header=TRUE)
-
 score.id = c()
 for(i in tax_table$qseqid){
-  vec=c(tax_table[tax_table$qseqid==i,]$species_score==100 & tax_table[tax_table$qseqid==i,]$pident>=98,
-  tax_table[tax_table$qseqid==i,]$genus_score==100 & (tax_table[tax_table$qseqid==i,]$pident<98 | tax_table[tax_table$qseqid==i,]$species_score<100),
+  vec=c(tax_table[tax_table$qseqid==i,]$species_score==100 & tax_table[tax_table$qseqid==i,]$pident.max.best>=98,
+  tax_table[tax_table$qseqid==i,]$genus_score==100 & (tax_table[tax_table$qseqid==i,]$pident.max.best<98 | tax_table[tax_table$qseqid==i,]$species_score<100),
   tax_table[tax_table$qseqid==i,]$family_score==100 & tax_table[tax_table$qseqid==i,]$genus_score<100,
   tax_table[tax_table$qseqid==i,]$order_score==100 & tax_table[tax_table$qseqid==i,]$family_score<100,
   tax_table[tax_table$qseqid==i,]$order_score<100 & tax_table[tax_table$qseqid==i,]$class_score==100,
@@ -348,6 +350,7 @@ for(i in tax_table$qseqid){
   # If a family level ID cannot be made, but the order score is 100, final ID will be to order level
   # If an order level ID cannot be made, but the class score is 100, final ID will be to class level
   # If a class level ID cannot be made, but the phylum score is 100, final ID will be to phylum level
+  # If a phylum level ID cannot be made, but the kingdom score is 100, final ID will be to kingdom level
 
   condition_num = which(vec)[1]
   columns = c("species","genus","family","order","class","phylum")
@@ -364,17 +367,19 @@ for(i in tax_table$qseqid){
     score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$order)[1])
   else if(condition_num==5)
     score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$class)[1])
-  else
+  else if(condition_num==6)
     score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$phylum)[1])
+  else
+    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$kingdom)[1])
 }
 
 tax_table$score.id <- score.id
 
-# Add the "possible.misid column" to tax_table from summary table
-tax_table$possible.misid<-"NA"
-for (i in unique (tax_table$qseqid)){
-   tax_table[tax_table$qseqid==i,]$possible.misid<-ifelse(sum(summary[summary$qseqid==i,]$possible.misid==1) > 0,1,0)
-}
+# Add the "possible.misid column" to tax_table from summary table. Not working currently
+#tax_table$possible.misid<-"NA"
+#for (i in unique (tax_table$qseqid)){
+#   tax_table[tax_table$qseqid==i,]$possible.misid<-ifelse(sum(summary[summary$qseqid==i,]$possible.misid==1) > 0,1,0)
+#}
       
 # Optionally, synonyms of scientific names can be downloaded from an appropriate database (WoRMS in the example below. See "taxize" documentation for other database options).
 # However, it should be stressed that such a search should be complemented with manual searching across databases, as it is unlikely to be exhaustive.
