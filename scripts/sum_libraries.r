@@ -1,41 +1,8 @@
 # Merging the sequence tables of all the sequencing libraries, and extracting sequences sample-wise
-# Authors: This script is based on the script C_Processing_with_DADA2.Rmd by Tobias G. Frøslev (see Frøslev et al. 2017). The function sumSequenceTables is a modified version of mergeSequenceTables, and was provided by Benjamin Callahan (see https://github.com/benjjneb/dada2/issues/132)
+# Authors: This script is based on the script C_Processing_with_DADA2.Rmd by Tobias G. Frøslev (see Frøslev et al. 2017). The custom function sumSequenceTables has been replaced with the standard mergeSequenceTables function, which now has a "sum" setting.
 # Eva Egelyng Sigsgaard has modified the script so the sequencing tables from all libraries are merged before extracting sequences, and so the script can be run with the gwf workflow. 
 
 args = commandArgs(trailingOnly=TRUE)
-
-#Define a function for combining two or more tables, collapsing samples with similar names:  
-sumSequenceTables <- function(table1, table2, ..., orderBy = "abundance") {
-  # Combine passed tables into a list
-  tables <- list(table1, table2)
-  tables <- c(tables, list(...))
-  # Validate tables
-  if(!(all(sapply(tables, dada2:::is.sequence.table)))) {
-    stop("At least two valid sequence tables, and no invalid objects, are expected.")
-  }
-  sample.names <- rownames(tables[[1]])
-  for(i in seq(2, length(tables))) {
-    sample.names <- c(sample.names, rownames(tables[[i]]))
-  }
-  seqs <- unique(c(sapply(tables, colnames), recursive=TRUE))
-  sams <- unique(sample.names)
-  # Make merged table
-  rval <- matrix(0L, nrow=length(sams), ncol=length(seqs))
-  rownames(rval) <- sams
-  colnames(rval) <- seqs
-  for(tab in tables) {
-    rval[rownames(tab), colnames(tab)] <- rval[rownames(tab), colnames(tab)] + tab
-  }
-  # Order columns
-  if(!is.null(orderBy)) {
-    if(orderBy == "abundance") {
-      rval <- rval[,order(colSums(rval), decreasing=TRUE),drop=FALSE]
-    } else if(orderBy == "nsamples") {
-      rval <- rval[,order(colSums(rval>0), decreasing=TRUE),drop=FALSE]
-    }
-  }
-  rval
-}
 
 ##Merge Libraries
 fileList = dir(path=args[1], pattern=NULL, all.files=FALSE,full.names=TRUE)
@@ -44,8 +11,8 @@ nochim_sumtable_all <- readRDS( paste(fileList[1], "/seqtab.nochim_RDS", sep='')
 for (f in fileList[-1]){
   sumtable <- readRDS( paste(f, "/seqtab_RDS", sep='') )
   sumtable_nochim <- readRDS( paste(f, "/seqtab.nochim_RDS", sep='') )
-  sumtable_all <- sumSequenceTables(sumtable_all,sumtable)
-  nochim_sumtable_all <- sumSequenceTables(nochim_sumtable_all,sumtable_nochim)
+  sumtable_all <- mergeSequenceTables(sumtable_all,sumtable, repeats="sum")
+  nochim_sumtable_all <- mergeSequenceTables(nochim_sumtable_all,sumtable_nochim, repeats="sum")
 }
 
 stBoth <- file.path(args[2],"seqtab_Both")
