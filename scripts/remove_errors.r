@@ -36,6 +36,14 @@ stnsSS <- file.path(args[1],"seqtab.nochim_SS_RDS")
 saveRDS(seqtab_SS,stSS)
 saveRDS(seqtab.nochim_SS,stnsSS)
 
+#Plot estimated error rates for sense reads:
+pdf(file = file.path(main_path,"errF_SS.pdf"))
+plotErrors(errF, nominalQ=TRUE)
+dev.off()
+pdf(file = file.path(main_path,"errR_SS.pdf"))
+plotErrors(errR, nominalQ=TRUE)
+dev.off()
+
 #Then DADA2 processing of "the antisense" reads:
 filt_path <- file.path(main_path, "DADA2_AS/filtered/matched") 
 fns <- list.files(filt_path)
@@ -63,3 +71,11 @@ stAS <- file.path(args[1],"seqtab_AS_RDS")
 stnsAS <- file.path(args[1],"seqtab.nochim_AS_RDS")
 saveRDS(seqtab_AS,stAS)
 saveRDS(seqtab.nochim_AS,stnsAS)
+
+#Plot estimated error rates for antisense reads:
+pdf(file = file.path(main_path,"errF_AS.pdf"))
+plotErrors(errF, nominalQ=TRUE)
+dev.off()
+pdf(file = file.path(main_path,"errR_AS.pdf"))
+plotErrors(errR, nominalQ=TRUE)
+dev.off()
