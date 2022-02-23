@@ -28,7 +28,7 @@ names(derepFs) <- SSsample.names
 names(derepRs) <- SSsample.names
 SSdadaFs <- dada(derepFs, err=errF, multithread = TRUE)
 SSdadaRs <- dada(derepRs, err=errR, multithread = TRUE)
-SSmergers <- mergePairs(SSdadaFs, derepFs, SSdadaRs, derepRs, verbose=TRUE,minOverlap = 5)
+SSmergers <- mergePairs(SSdadaFs, derepFs, SSdadaRs, derepRs, verbose=TRUE)
 seqtab_SS <- makeSequenceTable(SSmergers[names(SSmergers)])
 seqtab.nochim_SS <- removeBimeraDenovo(seqtab_SS, verbose=TRUE)
 stSS <- file.path(args[1],"seqtab_SS_RDS")
@@ -64,7 +64,7 @@ names(derepFs) <- ASsample.names
 names(derepRs) <- ASsample.names
 ASdadaFs <- dada(derepFs, err=errF, multithread = TRUE)
 ASdadaRs <- dada(derepRs, err=errR, multithread = TRUE)
-ASmergers <- mergePairs(ASdadaFs, derepFs, ASdadaRs, derepRs, verbose=TRUE,minOverlap = 5)
+ASmergers <- mergePairs(ASdadaFs, derepFs, ASdadaRs, derepRs, verbose=TRUE)
 seqtab_AS <- makeSequenceTable(ASmergers[names(ASmergers)])
 seqtab.nochim_AS <- removeBimeraDenovo(seqtab_AS, verbose=TRUE)
 stAS <- file.path(args[1],"seqtab_AS_RDS")
