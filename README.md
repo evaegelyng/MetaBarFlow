@@ -57,8 +57,12 @@ Create a conda environment based on the description file
   
 If you cannot create the environment based on the description file (updated packages may cause problems), create your own environment, beginning with the [workflow tool gwf](https://docs.gwf.app/) and the packages that are directly called in the scripts (cutadapt, sickle, taxizedb etc.). It can be helpful to use mamba to install packages, as it is faster than conda.
 
-  `conda install -c conda-forge mamba`
-   
+```
+  conda activate projectname
+  
+  conda install -c conda-forge mamba`
+```
+
 Download the taxizedb NCBI database:
 
 ```
