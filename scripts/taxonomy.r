@@ -337,12 +337,13 @@ for (i in unique (tax_table$qseqid)){
 # Determine a "final" taxonomic ID, using scores combined with a minimum similarity threshold of 98% for species-level id
 score.id = c()
 for(i in tax_table$qseqid){
-  vec=c(tax_table[tax_table$qseqid==i,]$species_score==100 & tax_table[tax_table$qseqid==i,]$pident.max.best>=98,
-  tax_table[tax_table$qseqid==i,]$genus_score==100 & (tax_table[tax_table$qseqid==i,]$pident.max.best<98 | tax_table[tax_table$qseqid==i,]$species_score<100),
-  tax_table[tax_table$qseqid==i,]$family_score==100 & tax_table[tax_table$qseqid==i,]$genus_score<100,
-  tax_table[tax_table$qseqid==i,]$order_score==100 & tax_table[tax_table$qseqid==i,]$family_score<100,
-  tax_table[tax_table$qseqid==i,]$order_score<100 & tax_table[tax_table$qseqid==i,]$class_score==100,
-  tax_table[tax_table$qseqid==i,]$class_score<100 & tax_table[tax_table$qseqid==i,]$phylum_score==100)
+  idx =  tax_table$qseqid==i
+  vec=c( isTRUE(all.equal(tax_table[idx,]$species_score, 100)) & as.numeric(tax_table[idx,]$pident.max.best)>=98,
+  isTRUE(all.equal(tax_table[idx,]$genus_score, 100)) & (as.numeric(tax_table[idx,]$pident.max.best)<98 | tax_table[idx,]$species_score<100),
+  isTRUE(all.equal(tax_table[idx,]$family_score, 100)) & tax_table[idx,]$genus_score<100,
+  isTRUE(all.equal(tax_table[idx,]$order_score, 100)) & tax_table[idx,]$family_score<100,
+  isTRUE(all.equal(tax_table[idx,]$class_score, 100)) & tax_table[idx,]$order_score<100,
+  isTRUE(all.equal(tax_table[idx,]$phylum_score, 100)) & tax_table[idx,]$class_score<100)
 
   # If the species score is 100 and the sequence similarity above 98%, final ID will be to species level
   # If a species level ID cannot be made, but the genus score is 100, final ID will be to genus level
@@ -358,19 +359,19 @@ for(i in tax_table$qseqid){
   if(is.na(condition_num))
     score.id = c(score.id, "NA")
   else if(condition_num==1)
-    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$species)[1])
+    score.id = c(score.id, as.vector(tax_table[idx,]$species)[1])
   else if(condition_num==2)
-    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$genus)[1])
+    score.id = c(score.id, as.vector(tax_table[idx,]$genus)[1])
   else if(condition_num==3)
-    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$family)[1])
+    score.id = c(score.id, as.vector(tax_table[idx,]$family)[1])
   else if(condition_num==4)
-    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$order)[1])
+    score.id = c(score.id, as.vector(tax_table[idx,]$order)[1])
   else if(condition_num==5)
-    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$class)[1])
+    score.id = c(score.id, as.vector(tax_table[idx,]$class)[1])
   else if(condition_num==6)
-    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$phylum)[1])
+    score.id = c(score.id, as.vector(tax_table[idx,]$phylum)[1])
   else
-    score.id = c(score.id, as.vector(tax_table[tax_table$qseqid==i,]$kingdom)[1])
+    score.id = c(score.id, as.vector(tax_table[idx,]$kingdom)[1])
 }
 
 tax_table$score.id <- score.id
