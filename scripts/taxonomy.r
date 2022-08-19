@@ -214,46 +214,30 @@ prefilter <- function(IDtable, lower_margin=2, remove = c("uncultured", "environ
   return(new_IDtable)
 }
 
-# Function2
-# Get full taxonomic path for all hits within the upper limit of each ASV. Identical species are only queried once.
+#Function2
+# Get full taxonomic path for all hits within the upper limit of each OTU. Identical species are only queried once....
 
-get_classification <- function(IDtable2) {
-  require(taxizedb)
+get_classification <- function(IDtable2){
+  require(taxize)
   all_staxids <- names(table(IDtable2$staxid[IDtable2$margin=="upper"])) # get all taxids for table
   all_classifications <- list() # prepare list for taxize output
   o=length(all_staxids) # number of taxids
   
   Start_from <- 1 # change if loop needs to be restarted due to time-out
   
-  wrong_taxid_matches <- c()
-  remove_entries <- c()
-  
   #Get ncbi classification of each entry
-  for (cl in Start_from:o) { # the taxize command "classification" can be run on the all_staxids vector in one line, but often there is
+  for (cl in Start_from:o){ # the taxize command "classification" can be run on the all_staxids vector in one line, but often there is
     #a timeout command, therefor this loop workaround.
     print(paste0("step 1 of 3: processing: ", cl , " of ", o , " taxids")) # make a progressline (indicating the index the loops needs to be
     #restarted from if it quits)
-    tax_match <- classification(all_staxids[cl], db = "ncbi")   # AGR 
-    if (is.na(tax_match) == TRUE) {
-      wrong_taxid_matches <- c(wrong_taxid_matches,all_staxids[cl])
-      remove_entries <- c(remove_entries,cl)
-    } else {
-      all_classifications[cl] <- tax_match
-    }                                                           # AGR 
-  }
-  
-  # In case there are still bad taxIDs, we delete all sequences with the bad tax ID (Adrian + Mads solve 15-01-2020)
-  if (length(wrong_taxid_matches) != 0) {
-    all_classifications <- all_classifications[-remove_entries]
+    all_classifications[cl] <- classification(all_staxids[cl], db = "ncbi")
   }
   
   #Construct a taxonomic path from each classification
   output <- data.frame(staxid=character(),kingdom=character(), phylum=character(),class=character(),order=character(),family=character(),genus=character(),species=character(), stringsAsFactors=FALSE)
-  totalnames <- length(all_staxids) - length(wrong_taxid_matches)
-  
-  ## - 1 ## this is if you have one NA, would run on test file, but not necessarily on other files with more NAs
-  for (curpart in seq(1:totalnames)) {
-    print(paste0("step 2 of 3: progress: ", round(((curpart/totalnames) * 100),0) ,"%")) # make a progress line
+  totalnames <- length(all_staxids)
+  for (curpart in seq(1:totalnames)){
+    print(paste0("step 2 of 3: progress: ", round(((curpart/totalnames) * 100),0) ,"%")) # make a progressline
     currenttaxon <- all_classifications[curpart][[1]]
     if (nchar(currenttaxon[1]) > 0) {
       spec <- all_staxids[curpart]
@@ -268,8 +252,8 @@ get_classification <- function(IDtable2) {
     }
   }
   taxonomic_info <- merge(IDtable2,output,by = "staxid", all=TRUE)
-  taxonomic_info$species[is.na(taxonomic_info$species)] <- taxonomic_info$ssciname[is.na(taxonomic_info$species)] 
-  return(list(taxonomic_info,wrong_taxid_matches))
+  taxonomic_info$species[is.na(taxonomic_info$species)] <- taxonomic_info$ssciname[is.na(taxonomic_info$species)]
+  return(taxonomic_info)
 }
 
 # Function3
