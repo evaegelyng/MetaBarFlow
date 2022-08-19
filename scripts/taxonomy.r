@@ -176,11 +176,8 @@ assign_taxonomy <- function(table,lower_margin=2, remove = c("")) {       # EES 
   ##
   
   gc <- get_classification(pf_new)
-  cf <- evaluate_classification(gc[[1]])     # AGR # gc[2] is the wrong taxid not classified 
+  cf <- evaluate_classification(gc)
   result <- list(classified_table=cf$taxonon_table, all_classifications=cf$all_taxa_table, all_classifications_summed=cf$all_taxa_table_summed, lower=lower_margin, removed=remove)  # EES removed upper_margin
-  if (length(gc[[2]]) != 0) {
-    print(paste0("Taxids not found in the classification: ", gc[2])) # AGR - Print the list of not matched taxids  
-  }
   return(result) 
 }
 
