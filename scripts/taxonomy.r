@@ -34,15 +34,11 @@ args = commandArgs(trailingOnly=TRUE)
 #   $all_classifications: this is the table used to make the classified_table. It contains all hits above lower_margin for all ASVs and their classifications (only upper_margin).
 #   ...and the input parameters
 
-# Print the arguments given in the gwf workflow file
-print(args[1])
-print(args[2])
-print(args[3])
-
 # Load required packages
 library(taxizedb) # For retrieving taxonomic classifications
 library(dplyr)
 library(tidyr)
+#library(stringr) # For splitting character strings into words. Only necessary when using BOLD+nt database (see below) 
 
 # Provide API key for NCBI
 options(ENTREZ_KEY="YOUR_KEY")
@@ -50,7 +46,23 @@ options(ENTREZ_KEY="YOUR_KEY")
 # Read the completed BLAST results into a table
 IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 
-# Use the following to add an empty column for ssciname. This is a temporary fix, as we have had problems retrieving scientific names from BLAST against our local reference database.
+# If using a combined BOLD+nt database built with the MARES pipeline, use the following commented lines to add sscinames
+#seqtab <- data.frame(readLines("/faststorage/project/eDNA/blastdb/Eukaryota_COI_NOBAR/taxid_process/Eukaryota_informative_name_table.tsv"))
+#seqtab$NWord <- sapply(strsplit(as.character(seqtab[,1]), " "), length)
+#colnames(seqtab)<-c("Name","NWord")
+
+#Extract taxonomy from blast file and put in separate column called "taxa"
+#word<-stringr::word #Specifies that the function word should be taken from the stringr library
+#seqtab$Taxa <- ifelse(seqtab[,2] == 4,word(seqtab[,1],2,sep=" "),word(seqtab[,1],2,3,sep=" "))
+
+#Extract TaxID from blast file and put in separate column called "TaxID"   
+#seqtab$TaxID <- ifelse(seqtab[,2] == 4,word(seqtab[,1],3,sep=" "),word(seqtab[,1],4,sep=" "))
+
+#Add taxa column to IDtable based on matched TaxIDs
+#IDtable$V16 <- seqtab$Taxa[match(IDtable$V15,seqtab$TaxID)]
+#IDtable$V16<-gsub(" "," ",IDtable$V16) #This may be unnecessary
+
+# If using the GenBank nt database, use the following to add an empty column for ssciname. This is a temporary fix, as we have had problems retrieving scientific names from BLAST against our local reference database.
 # If you would like to have the scientific names of each BLAST hit, try adding "ssciname" to the BLAST command in the gwf workflow file, and do not create the empty column.
 IDtable$V16<-"NA"
 
@@ -68,6 +80,19 @@ names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qs
       readr::write_file("", args[3])  
       stop("Query coverage is less than 100% for all hits", call.=FALSE)
     }
+
+# Extract only those rows where the pident is at least 90%. First check if the data contains hits with at least 90% sequence identity
+    if (max(IDtable$pident) >= 90 ) {
+      IDtable <- IDtable[IDtable$pident>=90,]  
+    } else {
+      readr::write_file("", args[2])
+      readr::write_file("", args[3])
+      stop("Sequence identity is less than 90% for all hits", call.=FALSE)
+    }
+
+# Remove hits that are (definitely) not identified to species level (their scientific name only contains one word)
+IDtable <- IDtable %>% mutate(species_level=if_else(sapply(strsplit(as.character(IDtable$ssciname)," "), length)==1, "no","yes"))
+IDtable <- IDtable[IDtable$species_level=="yes",]
 
 # The following is to define for each query sequence a minimum threshold of sequence similarity, which will determine whether a BLAST hit will be taken into account in the taxonomic classification of the query
 # In the summary object below, the values needed to determine this threshold are calculated
@@ -120,7 +145,7 @@ for (j in unique (summary$qseqid)) {
   }
 }
 
-# Test if the identification is solely based on less than 3 sequences - to detect identifications because of 1 or 2 high-similarity hits, which could be errorneous (EET: 07/01/2022)
+# Test if the identification is solely based on less than 3 sequences - to detect identifications because of 1 or 2 high-similarity hits, which could be erroneous (EET: 07/01/2022)
 summary$possible.misid.few<-"NA"  
 for (j in unique (summary$qseqid)) {
   for (i in unique (summary[summary$qseqid==j,]$qseqid_staxid)) {
@@ -176,8 +201,11 @@ assign_taxonomy <- function(table,lower_margin=2, remove = c("")) {       # EES 
   ##
   
   gc <- get_classification(pf_new)
-  cf <- evaluate_classification(gc)
+  cf <- evaluate_classification(gc[[1]])     # AGR # gc[2] is a list of the taxids not classified 
   result <- list(classified_table=cf$taxonon_table, all_classifications=cf$all_taxa_table, all_classifications_summed=cf$all_taxa_table_summed, lower=lower_margin, removed=remove)  # EES removed upper_margin
+  if (length(gc[[2]]) != 0) {
+    print(paste0("Taxids not found in the classification: ", gc[2])) # AGR - Print the list of not matched taxids  
+  }
   return(result) 
 }
 
@@ -212,29 +240,43 @@ prefilter <- function(IDtable, lower_margin=2, remove = c("uncultured", "environ
 }
 
 #Function2
-# Get full taxonomic path for all hits within the upper limit of each OTU. Identical species are only queried once....
+# Get full taxonomic path for all hits within the upper limit of each ASV. Identical species are only queried once.
 
-get_classification <- function(IDtable2){
-  require(taxize)
+get_classification <- function(IDtable2) {
+  require(taxizedb)
   all_staxids <- names(table(IDtable2$staxid[IDtable2$margin=="upper"])) # get all taxids for table
   all_classifications <- list() # prepare list for taxize output
   o=length(all_staxids) # number of taxids
   
   Start_from <- 1 # change if loop needs to be restarted due to time-out
   
+  no_taxid_matches <- c()
+    
   #Get ncbi classification of each entry
-  for (cl in Start_from:o){ # the taxize command "classification" can be run on the all_staxids vector in one line, but often there is
+  for (cl in Start_from:o) { # the taxize command "classification" can be run on the all_staxids vector in one line, but often there is
     #a timeout command, therefor this loop workaround.
     print(paste0("step 1 of 3: processing: ", cl , " of ", o , " taxids")) # make a progressline (indicating the index the loops needs to be
     #restarted from if it quits)
-    all_classifications[cl] <- classification(all_staxids[cl], db = "ncbi")
+     tax_match <- classification(all_staxids[cl], db = "ncbi")   # AGR 
+    if (is.na(tax_match) == TRUE) { #This happens when the hit was to a taxon from the BOLD database, which was not in NCBIs taxonomy, when the 
+    # BOLD+NCBI database was made, and which were therefore given a dummy taxid. These hits will produce NAs in the classification, or a wrong
+    # classification if the dummy taxid is now in use by NCBI. These hits must therefore be manually checked in the output file by comparing the 
+    # ssciname column with the final identification (EES 19-08-2022)
+      no_taxid_matches <- c(no_taxid_matches,all_staxids[cl])
+      tax_na <- classification(all_staxids[1], db = "ncbi") # Use classification of 1st taxid as a template
+      tax_na[[1]]["name"]<-"NA" # Replace tax names with NA
+      tax_na[[1]]["id"]<-"NA" # Replace taxids at each tax level with NA
+      all_classifications[cl] <- tax_na
+    } else {
+      all_classifications[cl] <- tax_match
+    }                                                            
   }
-  
+    
   #Construct a taxonomic path from each classification
   output <- data.frame(staxid=character(),kingdom=character(), phylum=character(),class=character(),order=character(),family=character(),genus=character(),species=character(), stringsAsFactors=FALSE)
   totalnames <- length(all_staxids)
-  for (curpart in seq(1:totalnames)){
-    print(paste0("step 2 of 3: progress: ", round(((curpart/totalnames) * 100),0) ,"%")) # make a progressline
+  for (curpart in seq(1:totalnames)) {
+    print(paste0("step 2 of 3: progress: ", round(((curpart/totalnames) * 100),0) ,"%")) # make a progress line
     currenttaxon <- all_classifications[curpart][[1]]
     if (nchar(currenttaxon[1]) > 0) {
       spec <- all_staxids[curpart]
@@ -249,8 +291,8 @@ get_classification <- function(IDtable2){
     }
   }
   taxonomic_info <- merge(IDtable2,output,by = "staxid", all=TRUE)
-  taxonomic_info$species[is.na(taxonomic_info$species)] <- taxonomic_info$ssciname[is.na(taxonomic_info$species)]
-  return(taxonomic_info)
+  taxonomic_info$species[is.na(taxonomic_info$species)] <- taxonomic_info$ssciname[is.na(taxonomic_info$species)] 
+  return(list(taxonomic_info,no_taxid_matches))
 }
 
 # Function3
@@ -303,7 +345,6 @@ evaluate_classification <- function(classified) {
   return(total_result)
 }
 
-
 # Classify your ASVs by running the wrapper (functionX) "assign_taxonomy" like this. Consider whether it makes sense to remove specific hits or taxa from the evaluation (see explanation below):
 my_classified_result <- assign_taxonomy(IDtable, lower_margin = 2, remove = c("uncultured", "environmental")) # EES removed constant upper_margin specification
 
@@ -313,6 +354,15 @@ tax_table <- my_classified_result$classified_table
 tax_table$pident.max.best<-"NA"
 for (i in unique (tax_table$qseqid)){
    tax_table[tax_table$qseqid==i,]$pident.max.best<-summary[summary$qseqid==i,]$pident.max.best[1]
+}
+
+# Add scientific name of top BLAST hit to tax_table from summary table. This is to inspect hits to taxa in 
+# the BOLD database, which were not in the NCBI taxonomy when the BOLD+NCBI database was made, and which
+# were therefore given a dummy taxid. These hits will produce NAs in the classification, or a wrong
+# classification if the dummy taxid is now in use by NCBI (EES 19-08-2022)
+tax_table$ssciname<-"NA"
+for (i in unique (tax_table$qseqid)){
+   tax_table[tax_table$qseqid==i,]$ssciname<-summary[summary$qseqid==i,]$ssciname[1]
 }
                                       
 # Determine a "final" taxonomic ID, using scores combined with a minimum similarity threshold of 98% for species-level id
@@ -356,13 +406,7 @@ for(i in tax_table$qseqid){
 }
 
 tax_table$score.id <- score.id
-
-# Add the "possible.misid column" to tax_table from summary table. Not working currently
-#tax_table$possible.misid<-"NA"
-#for (i in unique (tax_table$qseqid)){
-#   tax_table[tax_table$qseqid==i,]$possible.misid<-ifelse(sum(summary[summary$qseqid==i,]$possible.misid==1) > 0,1,0)
-#}
-      
+   
 # Optionally, synonyms of scientific names can be downloaded from an appropriate database (WoRMS in the example below. See "taxize" documentation for other database options).
 # However, it should be stressed that such a search should be complemented with manual searching across databases, as it is unlikely to be exhaustive.
       
@@ -386,9 +430,9 @@ tax_table$score.id <- score.id
 # For each eDNA sequence with a species-level identification (nwords equal to 2), add synonyms and valid name     
 #for (i in tax_table$qseqid){
 #
-#   if (tax_table[tax_table$qseqid==i,]$nwords==2){
+#   if (tax_table[idx,]$nwords==2){
 #       
-#       worms_id<-get_wormsid(tax_table[tax_table$qseqid==i,]$species)
+#       worms_id<-get_wormsid(tax_table[idx,]$species)
 #
 #       syns<-synonyms(as.character(worms_id[1]),db="worms")
 #       
@@ -396,9 +440,9 @@ tax_table$score.id <- score.id
 #       
 #                                                       syns_vec<-syns[[as.character(worms_id[1])]]['scientificname']
 #
-#                                                       tax_table[tax_table$qseqid==i,]$synonyms<-paste(unlist(syns_vec), collapse = ', ')
+#                                                       tax_table[idx,]$synonyms<-paste(unlist(syns_vec), collapse = ', ')
 #                                                       
-#                                                       tax_table[tax_table$qseqid==i,]$valid_name<-syns[[as.character(worms_id[1])]][['valid_name']][1]
+#                                                       tax_table[idx,]$valid_name<-syns[[as.character(worms_id[1])]][['valid_name']][1]
 #                                                       }
 #       }
 #}
