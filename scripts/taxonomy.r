@@ -153,7 +153,7 @@ for (j in unique (summary$qseqid)) {
   }
 }
 
-#Add summary column to detect possible.misid based on at least one of the preceeding tests (EET: 10/01/2022)
+#Add summary column to detect possible.misid based on at least one of the preceding tests (EET: 10/01/2022)
 summary$possible.misid<-"NA"  
 for (i in unique (summary$qseqid_staxid)) {
   summary[summary$qseqid_staxid==i,]$possible.misid<-ifelse(sum(as.integer(summary[summary$qseqid_staxid==i,]$possible.misid.highrange),as.integer(summary[summary$qseqid_staxid==i,]$possible.misid.outlier), as.integer(summary[summary$qseqid_staxid==i,]$possible.misid.few))>0,1,0)
@@ -356,6 +356,12 @@ for (i in unique (tax_table$qseqid)){
    tax_table[tax_table$qseqid==i,]$pident.max.best<-summary[summary$qseqid==i,]$pident.max.best[1]
 }
 
+# Add indication of possible misidentification to tax_table from summary table (EES 25-08-2022)
+tax_table$possible.misid<-"NA"
+for (i in unique (tax_table$qseqid)){
+   tax_table[tax_table$qseqid==i,]$possible.misid<-summary[summary$qseqid==i,]$possible.misid[1]
+}
+                                      
 # Add scientific name of top BLAST hit to tax_table from summary table. This is to inspect hits to taxa in 
 # the BOLD database, which were not in the NCBI taxonomy when the BOLD+NCBI database was made, and which
 # were therefore given a dummy taxid. These hits will produce NAs in the classification, or a wrong
