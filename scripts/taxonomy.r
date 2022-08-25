@@ -46,6 +46,10 @@ options(ENTREZ_KEY="YOUR_KEY")
 # Read the completed BLAST results into a table
 IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 
+# If using the GenBank nt database, use the following to add an empty column for ssciname. This is a temporary fix, as we have had problems retrieving scientific names from BLAST against our local reference database.
+# If you would like to have the scientific names of each BLAST hit, try adding "ssciname" to the BLAST command in the gwf workflow file, and do not create the empty column.
+IDtable$V16<-"NA"
+
 # If using a combined BOLD+nt database built with the MARES pipeline, use the following commented lines to add sscinames
 #seqtab <- data.frame(readLines("/faststorage/project/eDNA/blastdb/Eukaryota_COI_NOBAR/taxid_process/Eukaryota_informative_name_table.tsv"))
 #seqtab$NWord <- sapply(strsplit(as.character(seqtab[,1]), " "), length)
@@ -61,10 +65,6 @@ IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 #Add taxa column to IDtable based on matched TaxIDs
 #IDtable$V16 <- seqtab$Taxa[match(IDtable$V15,seqtab$TaxID)]
 #IDtable$V16<-gsub(" "," ",IDtable$V16) #This may be unnecessary
-
-# If using the GenBank nt database, use the following to add an empty column for ssciname. This is a temporary fix, as we have had problems retrieving scientific names from BLAST against our local reference database.
-# If you would like to have the scientific names of each BLAST hit, try adding "ssciname" to the BLAST command in the gwf workflow file, and do not create the empty column.
-IDtable$V16<-"NA"
 
 # Read the possible problematic taxids as a table
 MergedTaxIDs<-read.table("YOUR_PATH/MergedTaxIDs", header=TRUE)
