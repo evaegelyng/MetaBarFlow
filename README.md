@@ -184,6 +184,10 @@ Increase no. of cores, memory requirements and/or time limits if needed, or decr
 
 The outputs from this workflow that you will normally use for further analyses are primarily the ASV table of which unique sequences are in which samples (DADA2_nochim.table) and the taxonomic classification of these ASVs (classified.txt). Further analyses can be done on your local computer in R.
 
+Importantly, some taxids may not have a match in the NCBI taxonomy, and need to be classified manually. When using the combined BOLD+nt database, some taxa may have gotten a "dummy taxid", as they are not found in NCBIs taxonomy. However, unmatched taxids may also occur due to the nt database and taxizedb not being synchronized. To get a list of the unmatched taxids, and where they occur, use the following command:
+
+`grep "Taxids not found" .gwf/logs/taxonomy_*.stdout > taxids.not.found.txt`
+
 Remember to backup your raw data, metadata, scripts and conda environment(s), and final outputs!
 
 
