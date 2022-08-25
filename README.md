@@ -148,7 +148,7 @@ echo -e OldTaxID'\t'NewTaxID > MergedTaxIDs
 less merged.dmp | cut -f1,3 >> MergedTaxIDs
 ```
 
-In the taxonomy.r script, add your own path to the MergedTaxIDs table. Also, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Consider whether the lower margin, the thresholds applied when indicating possible misidentifications, or the similarity threshold for species-level identification should be adjusted (see explanations in the script).    
+In the taxonomy.r script, add your own path to the MergedTaxIDs table. If using a combined BOLD+nt database made with the MARES pipeline, uncomment the lines in the beginning of the script as indicated. Also, consider whether you for instance want to keep hits to "uncultured" and "environmental" sequences and if so, adjust the "remove" parameter to change this. Consider whether the lower margin, the thresholds applied when indicating possible misidentifications, or the similarity threshold for species-level identification should be adjusted (see explanations in the script).    
 
 In the workflow file, replace the project name and the path to the raw data with your own. If appropriate, change the length and quality requirements provided to the sickle command. 
 
@@ -170,7 +170,7 @@ By adding the name of a specific target after the above command, you can see the
 
  `gwf status demultiplex*` 
 
-As the function splitting your fasta file of OTUs before BLAST searching may output a smaller number of files than the 99 files specified (it seems the software has a minimum threshold for the number of sequences that can go in each file), double-check in the .stderr log file that the number of sequences of the separate files add up to the total sequence number. Note that a hidden folder named ".gwf/logs" is where you will find your log files. Because the number of input files for BLAST searching is unknown until the split function has run, the remaining targets of the workflow can only be started once splitting is complete. To start the remaining targets, just use:
+As the function splitting your fasta file of ASVs before BLAST searching may output a smaller number of files than the 99 files specified (it seems the software has a minimum threshold for the number of sequences that can go in each file), double-check in the .stderr log file that the number of sequences of the separate files add up to the total sequence number. Note that a hidden folder named ".gwf/logs" is where you will find your log files. Because the number of input files for BLAST searching is unknown until the split function has run, the remaining targets of the workflow can only be started once splitting is complete. To start the remaining targets, just use:
 
  `gwf run`
 
