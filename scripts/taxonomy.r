@@ -51,7 +51,7 @@ IDtable <- read.csv(file = args[1], sep='\t', header=F, as.is=TRUE)
 IDtable$V16<-"NA"
 
 # If using a combined BOLD+nt database built with the MARES pipeline, use the following commented lines to add sscinames
-#seqtab <- data.frame(readLines("/faststorage/project/eDNA/blastdb/Eukaryota_COI_NOBAR/taxid_process/Eukaryota_informative_name_table.tsv"))
+#seqtab <- data.frame(readLines("YOUR_DB_PATH/taxid_process/YOUR_DB_informative_name_table.tsv"))
 #seqtab$NWord <- sapply(strsplit(as.character(seqtab[,1]), " "), length)
 #colnames(seqtab)<-c("Name","NWord")
 
