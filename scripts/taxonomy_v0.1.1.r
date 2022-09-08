@@ -90,9 +90,9 @@ names(IDtable) <- c("qseqid","sseqid","pident","length","mismatch","gapopen","qs
       stop("Sequence identity is less than 90% for all hits", call.=FALSE)
     }
 
-# Remove hits that are (definitely) not identified to species level (their scientific name only contains one word)
-IDtable <- IDtable %>% mutate(species_level=if_else(sapply(strsplit(as.character(IDtable$ssciname)," "), length)==1, "no","yes"))
-IDtable <- IDtable[IDtable$species_level=="yes",]
+# If scientific names have been retrieved, optionally remove hits that are definitely not identified to species level (their scientific name only contains one word)
+#IDtable <- IDtable %>% mutate(species_level=if_else(sapply(strsplit(as.character(IDtable$ssciname)," "), length)==1, "no","yes"))
+#IDtable <- IDtable[IDtable$species_level=="yes",]
 
 # The following is to define for each query sequence a minimum threshold of sequence similarity, which will determine whether a BLAST hit will be taken into account in the taxonomic classification of the query
 # In the summary object below, the values needed to determine this threshold are calculated
