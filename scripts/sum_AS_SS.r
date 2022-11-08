@@ -3,6 +3,8 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
+library(dada2)
+
 ###Sum sense and antisense sequence tables
 stAS <- file.path(args[1],"seqtab_AS_RDS")
 stnsAS <- file.path(args[1],"seqtab.nochim_AS_RDS")

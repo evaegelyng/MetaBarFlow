@@ -4,6 +4,8 @@
 
 args = commandArgs(trailingOnly=TRUE)
 
+library(dada2)
+
 ##Merge Libraries
 fileList = dir(path=args[1], pattern=NULL, all.files=FALSE,full.names=TRUE)
 sumtable_all <- readRDS( paste(fileList[1], "/seqtab_RDS", sep='') )
