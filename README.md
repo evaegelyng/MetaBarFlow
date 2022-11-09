@@ -73,7 +73,7 @@ Download the taxizedb NCBI database:
   db_download_ncbi() 
 ```
 
-This database should be updated regularly to keep up to date with the GenBank nt database. To update run as above, but with overwrite enabled:
+NB! This database should be updated regularly to keep up to date with the GenBank nt database. It should not be older than the nt database! However, if you are using the old database for another project, consider saving the old database under a different name, so it is not overwritten. You can find the database in your home folder under .cache/R/taxizedb/. To update, run as above, but with overwrite enabled:
 
    `db_download_ncbi(overwrite=TRUE)`
 
@@ -130,7 +130,7 @@ For all "nt.XX.tar.gz" files, run the following:
 
 `tar -zvxf nt.XX.tar.gz`
 
-If using the NCBI taxonomy, create the table MergedTaxIDs to translate old, deprecated taxids to the corresponding new taxid. This file should be updated every so often to account for newly merged taxIDs. The file is generated from the merged.dmp file in the taxdb folder downloaded from NCBI:
+If using the NCBI taxonomy, create the table MergedTaxIDs to translate old, deprecated taxids to the corresponding new taxid. NB! This file should be updated every time the taxizedb database is updated, to account for newly merged taxIDs. The file is generated from the merged.dmp file in the taxdb folder downloaded from NCBI:
 
 Download and unzip the most recent taxdump folder (e.g.)
 
