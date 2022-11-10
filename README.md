@@ -73,7 +73,9 @@ Download the taxizedb NCBI database:
   db_download_ncbi() 
 ```
 
-NB! This database should be updated regularly to keep up to date with the GenBank nt database. It should not be older than the nt database! However, if you are using the old database for another project, consider saving the old database under a different name, so it is not overwritten. You can find the database in your home folder under .cache/R/taxizedb/. To update, run as above, but with overwrite enabled:
+NB! This database should be updated regularly to keep up to date with the GenBank nt database. It should not be older than the nt database! However, if you are currently using the old database for another project, save the old database under a different name, so it is not overwritten. You can find the database in your home folder under .cache/R/taxizedb/. It is possible to switch between the database versions by renaming them, as the file named NCBI.sql will be used by taxizedb. However, this means that if you have several versions saved, you should always check manually that you are using the correct version. 
+
+To update the database, run:
 
    `db_download_ncbi(overwrite=TRUE)`
 
