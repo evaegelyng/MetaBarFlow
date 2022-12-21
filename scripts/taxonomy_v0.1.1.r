@@ -168,6 +168,29 @@ for (i in unique (IDtable$qseqid)){
    IDtable[IDtable$qseqid==i,]$pident.min.best<-summary[summary$qseqid==i,]$pident.min.best[1]
 }
 
+##Add very small number (1e-270) to evalues of zero to avoid producing NA's when scores are calculated (EET, 11/11/2022)
+#IDtable$evalue[which(IDtable$evalue==0)]<-1e-270
+
+##Exclude certain seqids (defined by list of wrong IDs to exclude) (EET, 21/12/2022)
+
+##Load list of wrong IDs
+#false.ids<-read.delim(file = "YOUR_PATH/wrong_id_list.txt", sep='\t', header=T, as.is=TRUE)
+
+## Subtract rows with seqids in wrong_ids_list.txt
+#idx.rm<-NULL
+#for (i in 1:nrow(IDtable)) {
+#  if (IDtable$sseqid[i] %in% false.ids$sseqid) {idx.rm<-append(idx.rm,i)}
+#}
+
+##Sequences removed
+#removed<-cbind(IDtable$qseqid[idx.rm],IDtable$sseqid[idx.rm])
+
+#IDtable<-IDtable[-idx.rm,]
+
+##Print the sequences which have been removed for each qseqid
+#if(nrow(removed)>0) print(paste("From",removed[,1], "seqid", removed[,2], "was removed")) else print("No hits removed")
+
+
 # Define the four taxonomy script functions (where FunctionX is a wrapper that runs 1, 2, 3 in one go):
 
 # FunctionX
