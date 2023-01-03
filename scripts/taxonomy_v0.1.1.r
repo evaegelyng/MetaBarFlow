@@ -173,6 +173,7 @@ for (i in unique (IDtable$qseqid)){
 
 ##Exclude certain seqids (defined by list of wrong IDs to exclude) (EET, 21/12/2022)
 #First, create a text file with errorneous accession numbers in a column called "sseqid" and place this file at a convenient location. Load the file by inserting the relevant path below
+#When using a combined BOLD+nt database built with the MARES pipeline, the .1 / .2 or similar version numbers of the accession numbers should be removed from the wrong_ids.txt file
 
 
 ##Load list of wrong IDs
