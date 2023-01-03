@@ -172,6 +172,8 @@ for (i in unique (IDtable$qseqid)){
 #IDtable$evalue[which(IDtable$evalue==0)]<-1e-270
 
 ##Exclude certain seqids (defined by list of wrong IDs to exclude) (EET, 21/12/2022)
+#First, create a text file with errorneous accession numbers in a column called "sseqid" and place this file at a convenient location. Load the file by inserting the relevant path below
+
 
 ##Load list of wrong IDs
 #false.ids<-read.delim(file = "YOUR_PATH/wrong_id_list.txt", sep='\t', header=T, as.is=TRUE)
@@ -185,7 +187,7 @@ for (i in unique (IDtable$qseqid)){
 ##Sequences removed
 #removed<-cbind(IDtable$qseqid[idx.rm],IDtable$sseqid[idx.rm])
 
-#IDtable<-IDtable[-idx.rm,]
+#if (length(idx.rm)>0) {IDtable<-IDtable[-idx.rm,]}
 
 ##Print the sequences which have been removed for each qseqid
 #if(nrow(removed)>0) print(paste("From",removed[,1], "seqid", removed[,2], "was removed")) else print("No hits removed")
