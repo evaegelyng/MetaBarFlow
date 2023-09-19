@@ -168,8 +168,8 @@ for (i in unique (IDtable$qseqid)){
    IDtable[IDtable$qseqid==i,]$pident.min.best<-summary[summary$qseqid==i,]$pident.min.best[1]
 }
 
-##Add very small number (1e-270) to evalues of zero to avoid producing NA's when scores are calculated (EET, 11/11/2022)
-#IDtable$evalue[which(IDtable$evalue==0)]<-1e-270
+##Replace evalues of zero with the minimum evalue of all other hits to avoid producing NA's when scores are calculated (EET, 19/09/2023)
+#IDtable$evalue[which(IDtable$evalue==0)]<-min(IDtable$evalue[which(IDtable$evalue>0)])
 
 ##Exclude certain seqids (defined by list of wrong IDs to exclude) (EET, 21/12/2022)
 #First, create a text file with errorneous accession numbers in a column called "sseqid" and place this file at a convenient location. Load the file by inserting the relevant path below
