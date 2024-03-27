@@ -212,7 +212,7 @@ This pipeline was developed in the eDNA research group at the Department of Biol
 
 ## Suggested Citation
 
-Sigsgaard, E. E., Soraggi, S., Jensen, M. R., Repollés, A. G., Thomassen, E. E., & Thomsen, P. F. (2022). MetaBarFlow (Version 0.1.0) [Computer software]. https://doi.org/10.5281/zenodo.6006700 
+Sigsgaard, E. E., Soraggi, S., Jensen, M. R., Repollés, A. G., Thomassen, E. E., & Thomsen, P. F. (2022). MetaBarFlow (Version 0.1.1) [Computer software]. https://doi.org/10.5281/zenodo.7023055
 
 ## Acknowledgements
 
